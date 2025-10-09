@@ -113,7 +113,7 @@ Select **"View All Clipboard History"** from the menu to open the full managemen
 
 ## Requirements
 
-- macOS 13.0 (Ventura) or later
+- macOS 12.0 (Monterey) or later
 - Universal Binary (Intel + Apple Silicon)
 
 ## Notes

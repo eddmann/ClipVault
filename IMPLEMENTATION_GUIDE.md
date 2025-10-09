@@ -3,7 +3,7 @@
 **Version:** 1.1
 **Last Updated:** October 9, 2025
 **Swift Version:** 5.9+
-**Minimum macOS:** 13.0 (Ventura)
+**Minimum macOS:** 12.0 (Monterey)
 
 ---
 
@@ -1590,7 +1590,7 @@ if let existingItem = try? fetchItemByHash(hash) {
 
 **Targets:**
 1. **ClipVault** (macOS App)
-   - Deployment Target: macOS 13.0
+   - Deployment Target: macOS 12.0
    - Bundle ID: `com.clipvault.ClipVault` (adjust as needed)
    - Signing: Automatic or Manual
 
