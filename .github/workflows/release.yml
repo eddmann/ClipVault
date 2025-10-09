@@ -1,0 +1,124 @@
+name: Release ClipVault
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Update version in project
+        run: |
+          # Update MARKETING_VERSION in project.pbxproj
+          sed -i '' "s/MARKETING_VERSION = [^;]*/MARKETING_VERSION = ${{ inputs.version }}/g" ClipVault.xcodeproj/project.pbxproj
+
+          # Extract major version number for CURRENT_PROJECT_VERSION (e.g., 1.0.0 -> 1)
+          BUILD_NUMBER=$(echo "${{ inputs.version }}" | sed 's/[^0-9]*\([0-9]*\).*/\1/')
+          sed -i '' "s/CURRENT_PROJECT_VERSION = [^;]*/CURRENT_PROJECT_VERSION = $BUILD_NUMBER/g" ClipVault.xcodeproj/project.pbxproj
+
+          echo "Updated version to ${{ inputs.version }} (build $BUILD_NUMBER)"
+
+      - name: Build app
+        run: |
+          xcodebuild clean build \
+            -project ClipVault.xcodeproj \
+            -scheme ClipVault \
+            -configuration Release \
+            -derivedDataPath ./build \
+            -arch x86_64 -arch arm64 \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Create app bundle ZIP
+        run: |
+          cd build/Build/Products/Release
+          zip -r ../../../../ClipVault-${{ inputs.version }}.zip ClipVault.app
+          cd ../../../..
+          echo "Created ClipVault-${{ inputs.version }}.zip"
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          cat > release_notes.md << 'EOF'
+          ## ClipVault v${{ inputs.version }}
+
+          ### Installation
+
+          1. Download `ClipVault-${{ inputs.version }}.zip`
+          2. Unzip the file
+          3. Move `ClipVault.app` to your Applications folder
+          4. Right-click and select "Open" the first time (to bypass Gatekeeper)
+
+          If you see "ClipVault is damaged and can't be opened", run:
+          ```bash
+          xattr -cr /Applications/ClipVault.app
+          ```
+
+          ### Features
+
+          - **Automatic clipboard monitoring** - Captures all clipboard changes in real-time
+          - **Military-grade encryption** - AES-256-GCM encryption with Keychain storage
+          - **Smart filtering** - Automatically excludes passwords, API keys, and sensitive content
+          - **Real-time search** - Instantly search through clipboard history
+          - **Pin important items** - Keep frequently used snippets at the top
+          - **Visual notifications** - Animated on-screen feedback for copy/paste actions
+          - **Auto-paste** - One-click paste without manual keyboard commands
+          - **Source app tracking** - See which app each clipboard item came from
+          - **Rich text support** - Preserves bold, italic, colors, and formatting
+
+          ### Requirements
+
+          - macOS 13.0 (Ventura) or later
+          - Universal Binary (Intel + Apple Silicon)
+
+          ### Notes
+
+          ⚠️ **Unsigned Build**: This build is not notarized or signed with a Developer ID. You'll need to right-click and select "Open" the first time you run it.
+
+          For auto-paste functionality, grant Accessibility permissions when prompted in System Settings → Privacy & Security → Accessibility.
+
+          ### Security & Privacy
+
+          - All clipboard content is encrypted at rest using AES-256-GCM
+          - Encryption keys stored securely in macOS Keychain
+          - No network transmission - all data stays local
+          - Zero telemetry or analytics collection
+          EOF
+
+          echo "Generated release notes"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: ClipVault v${{ inputs.version }}
+          body_path: release_notes.md
+          files: ClipVault-${{ inputs.version }}.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ClipVault-${{ inputs.version }}
+          path: ClipVault-${{ inputs.version }}.zip
+          retention-days: 90

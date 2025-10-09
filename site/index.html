@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary Meta Tags -->
+    <title>
+      ClipVault - Secure Clipboard Manager for macOS | Encrypted History
+    </title>
+    <meta
+      name="title"
+      content="ClipVault - Secure Clipboard Manager for macOS | Encrypted History"
+    />
+    <meta
+      name="description"
+      content="ClipVault is a secure, privacy-focused clipboard manager for macOS. Automatically captures clipboard history with AES-256 encryption, smart filtering, and instant search. Free and open source."
+    />
+    <meta
+      name="keywords"
+      content="ClipVault, clipboard manager, macOS, secure clipboard, encrypted clipboard, clipboard history, privacy, AES-256, menu bar app, clipboard encryption"
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Edd Mann" />
+    <meta name="theme-color" content="#3b82f6" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://eddmann.com/ClipVault/" />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="logo.png" />
+    <link rel="apple-touch-icon" href="logo.png" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://eddmann.com/ClipVault/" />
+    <meta property="og:title" content="ClipVault - Secure Clipboard Manager for macOS" />
+    <meta
+      property="og:description"
+      content="Free macOS clipboard manager with military-grade encryption. Never lose clipboard history again, with smart filtering and instant search."
+    />
+    <meta
+      property="og:image"
+      content="https://eddmann.com/ClipVault/demo.png"
+    />
+    <meta property="og:site_name" content="ClipVault" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://eddmann.com/ClipVault/" />
+    <meta
+      property="twitter:title"
+      content="ClipVault - Secure Clipboard Manager for macOS"
+    />
+    <meta
+      property="twitter:description"
+      content="Free macOS clipboard manager with military-grade encryption. Never lose clipboard history again."
+    />
+    <meta
+      property="twitter:image"
+      content="https://eddmann.com/ClipVault/demo.png"
+    />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "ClipVault",
+        "operatingSystem": "macOS 13.0 or later",
+        "applicationCategory": "UtilitiesApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "A secure, privacy-focused clipboard manager for macOS with AES-256 encryption, smart filtering, and instant search capabilities.",
+        "downloadUrl": "https://github.com/eddmann/ClipVault/releases",
+        "softwareVersion": "1.0.0",
+        "author": {
+          "@type": "Person",
+          "name": "Edd Mann"
+        },
+        "image": "https://eddmann.com/ClipVault/logo.png",
+        "screenshot": "https://eddmann.com/ClipVault/demo.png"
+      }
+    </script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        --secondary-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+        --accent-gradient: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+        --dark: #1d1d1f;
+        --light: #f5f5f7;
+        --gray: #86868b;
+        --card-bg: rgba(255, 255, 255, 0.95);
+        --shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.15);
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+          'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: var(--light);
+        color: var(--dark);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header */
+      header {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-block: 14px;
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--dark);
+        text-decoration: none;
+      }
+
+      .logo-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+
+      .download-btn {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 12px 30px;
+        margin-block: 14px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      }
+
+      .download-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+      }
+
+      /* Hero Section */
+      .hero {
+        padding: 150px 0 100px;
+        text-align: center;
+        background: linear-gradient(180deg, #f5f5f7 0%, #ffffff 100%);
+      }
+
+      .hero-icon {
+        width: 180px;
+        height: 180px;
+        margin: 0 auto 30px;
+        animation: float 3s ease-in-out infinite;
+        filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.15));
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      h1 {
+        font-size: 64px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.1;
+      }
+
+      .subtitle {
+        font-size: 28px;
+        color: var(--gray);
+        margin-bottom: 40px;
+        font-weight: 400;
+      }
+
+      .hero-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .primary-btn {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 18px 40px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 18px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: var(--shadow);
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .primary-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .version {
+        color: var(--gray);
+        font-size: 14px;
+      }
+
+      /* Security Badge */
+      .security-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 20px;
+      }
+
+      /* Features Section */
+      .features {
+        padding: 100px 0;
+        background: white;
+      }
+
+      .section-title {
+        text-align: center;
+        font-size: 48px;
+        font-weight: 700;
+        margin-bottom: 60px;
+        color: var(--dark);
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-top: 60px;
+      }
+
+      .feature-card {
+        background: var(--card-bg);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .feature-icon {
+        font-size: 48px;
+        margin-bottom: 20px;
+        display: block;
+      }
+
+      .feature-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--dark);
+      }
+
+      .feature-description {
+        color: var(--gray);
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      /* How It Works */
+      .how-it-works {
+        padding: 100px 0;
+        background: linear-gradient(180deg, #ffffff 0%, #f5f5f7 100%);
+      }
+
+      .steps {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 60px;
+        flex-wrap: wrap;
+        gap: 40px;
+      }
+
+      .step {
+        text-align: center;
+        max-width: 300px;
+      }
+
+      .step-number {
+        width: 60px;
+        height: 60px;
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0 auto 20px;
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+      }
+
+      .step-title {
+        font-size: 22px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .step-description {
+        color: var(--gray);
+        font-size: 16px;
+      }
+
+      /* CTA Section */
+      .cta {
+        padding: 100px 0;
+        background: var(--primary-gradient);
+        color: white;
+        text-align: center;
+      }
+
+      .cta h2 {
+        font-size: 48px;
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
+
+      .cta p {
+        font-size: 24px;
+        margin-bottom: 40px;
+        opacity: 0.9;
+      }
+
+      .cta-btn {
+        background: white;
+        color: #3b82f6;
+        padding: 18px 40px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 18px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        display: inline-block;
+      }
+
+      .cta-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Footer */
+      footer {
+        background: var(--dark);
+        color: white;
+        padding: 40px 0;
+        text-align: center;
+      }
+
+      footer p {
+        color: var(--gray);
+      }
+
+      footer a {
+        color: white;
+        text-decoration: none;
+        margin: 0 15px;
+        transition: opacity 0.3s ease;
+      }
+
+      footer a:hover {
+        opacity: 0.7;
+      }
+
+      /* Animations */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeIn 0.8s ease forwards;
+      }
+
+      @keyframes fadeIn {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .fade-in:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .fade-in:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .fade-in:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .fade-in:nth-child(4) {
+        animation-delay: 0.4s;
+      }
+      .fade-in:nth-child(5) {
+        animation-delay: 0.5s;
+      }
+      .fade-in:nth-child(6) {
+        animation-delay: 0.6s;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 42px;
+        }
+        .subtitle {
+          font-size: 20px;
+        }
+        .section-title {
+          font-size: 36px;
+        }
+        .hero {
+          padding: 120px 0 60px;
+        }
+        .features,
+        .how-it-works,
+        .cta {
+          padding: 60px 0;
+        }
+        .hero-icon {
+          width: 140px;
+          height: 140px;
+        }
+        .steps {
+          flex-direction: column;
+          align-items: center;
+        }
+        .download-btn {
+          display: none;
+        }
+      }
+
+      /* Demo Preview */
+      .demo-preview {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 40px;
+        margin: 60px auto;
+        max-width: 800px;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .demo-image {
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        text-align: center;
+        color: white;
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+      }
+
+      .demo-image img {
+        width: 100%;
+        max-width: 760px;
+        display: block;
+        margin: 0 auto;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <nav class="container">
+        <a href="#" class="logo">
+          <img
+            src="logo.png"
+            alt="ClipVault app icon - secure clipboard manager"
+            class="logo-icon"
+          />
+          <span>ClipVault</span>
+        </a>
+        <a
+          href="https://github.com/eddmann/ClipVault/releases"
+          class="download-btn"
+          target="_blank"
+          >Download Free</a
+        >
+      </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <img
+          src="logo.png"
+          alt="ClipVault app icon - secure encrypted clipboard manager for macOS"
+          class="hero-icon"
+        />
+        <h1>Secure Clipboard Manager</h1>
+        <p class="subtitle">
+          Never lose clipboard history again. Encrypted, private, and powerful.
+        </p>
+        <div class="hero-buttons">
+          <a
+            href="https://github.com/eddmann/ClipVault/releases"
+            class="primary-btn"
+            target="_blank"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M10 14L4 8L5.4 6.6L9 10.2V2H11V10.2L14.6 6.6L16 8L10 14ZM4 18C3.45 18 2.97917 17.8042 2.5875 17.4125C2.19583 17.0208 2 16.55 2 16V13H4V16H16V13H18V16C18 16.55 17.8042 17.0208 17.4125 17.4125C17.0208 17.8042 16.55 18 16 18H4Z"
+                fill="currentColor"
+              />
+            </svg>
+            Download for macOS
+          </a>
+          <span class="version">Free • Open Source • macOS 13+</span>
+        </div>
+        <div class="security-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2ZM10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z" fill="currentColor"/>
+          </svg>
+          AES-256-GCM Encrypted
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+      <div class="container">
+        <h2 class="section-title">Privacy-First. Powerful. Native.</h2>
+
+        <div class="features-grid">
+          <div class="feature-card fade-in">
+            <span class="feature-icon">🔒</span>
+            <h3 class="feature-title">Military-Grade Encryption</h3>
+            <p class="feature-description">
+              All clipboard content encrypted at rest using AES-256-GCM with
+              keys securely stored in macOS Keychain. Your data stays private.
+            </p>
+          </div>
+
+          <div class="feature-card fade-in">
+            <span class="feature-icon">🎯</span>
+            <h3 class="feature-title">Smart Filtering</h3>
+            <p class="feature-description">
+              Automatically detects and excludes sensitive content like
+              passwords, API keys, SSH keys, and credit cards. Privacy by
+              default.
+            </p>
+          </div>
+
+          <div class="feature-card fade-in">
+            <span class="feature-icon">⚡</span>
+            <h3 class="feature-title">Instant Search</h3>
+            <p class="feature-description">
+              Lightning-fast search through your entire clipboard history.
+              Find any item in milliseconds with real-time filtering.
+            </p>
+          </div>
+
+          <div class="feature-card fade-in">
+            <span class="feature-icon">📌</span>
+            <h3 class="feature-title">Pin Important Items</h3>
+            <p class="feature-description">
+              Keep frequently used snippets at the top. Pinned items survive
+              history cleanup and stay accessible forever.
+            </p>
+          </div>
+
+          <div class="feature-card fade-in">
+            <span class="feature-icon">🎨</span>
+            <h3 class="feature-title">Rich Text Support</h3>
+            <p class="feature-description">
+              Preserves formatting like bold, italic, colors, and fonts. RTF
+              content maintained exactly as you copied it.
+            </p>
+          </div>
+
+          <div class="feature-card fade-in">
+            <span class="feature-icon">🚫</span>
+            <h3 class="feature-title">App Exclusions</h3>
+            <p class="feature-description">
+              Exclude password managers and banking apps. Customize which
+              applications should never enter your clipboard history.
+            </p>
+          </div>
+
+          <div class="feature-card fade-in">
+            <span class="feature-icon">📱</span>
+            <h3 class="feature-title">Source App Tracking</h3>
+            <p class="feature-description">
+              See which app each clipboard item came from with native icons.
+              Filter history by source application.
+            </p>
+          </div>
+
+          <div class="feature-card fade-in">
+            <span class="feature-icon">✨</span>
+            <h3 class="feature-title">Visual Notifications</h3>
+            <p class="feature-description">
+              Instant on-screen feedback when copying or pasting. Beautiful,
+              non-intrusive notifications that auto-dismiss.
+            </p>
+          </div>
+
+          <div class="feature-card fade-in">
+            <span class="feature-icon">⚙️</span>
+            <h3 class="feature-title">Auto-Paste</h3>
+            <p class="feature-description">
+              One-click paste with automatic ⌘V simulation. Optional feature
+              for power users who need maximum efficiency.
+            </p>
+          </div>
+        </div>
+
+        <div class="demo-preview">
+          <h3
+            style="
+              text-align: center;
+              margin-bottom: 20px;
+              font-size: 20px;
+              color: var(--dark);
+            "
+          >
+            Lives in Your Menu Bar
+          </h3>
+          <div class="demo-image">
+            <!-- Screenshot will go here -->
+            <div>
+              <p style="margin-bottom: 10px; font-size: 14px; opacity: 0.8;">Menu bar interface with instant access</p>
+              <p style="font-size: 14px; opacity: 0.8;">Screenshot coming soon</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+      <div class="container">
+        <h2 class="section-title">How It Works</h2>
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <h3 class="step-title">Download & Install</h3>
+            <p class="step-description">
+              Download ClipVault and drag it to your Applications folder.
+              Launch it once to start.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <h3 class="step-title">Copy Anything</h3>
+            <p class="step-description">
+              Copy text as usual. ClipVault automatically captures and
+              encrypts everything in the background.
+            </p>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <h3 class="step-title">Access Anytime</h3>
+            <p class="step-description">
+              Click the menu bar icon to search, browse, and paste from your
+              encrypted clipboard history.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta" id="download">
+      <div class="container">
+        <h2>Ready to Secure Your Clipboard?</h2>
+        <p>
+          Download ClipVault today. Free, open source, and built for privacy.
+        </p>
+        <a
+          href="https://github.com/eddmann/ClipVault/releases"
+          class="cta-btn"
+          target="_blank"
+          >Download ClipVault</a
+        >
+        <p style="margin-top: 20px; font-size: 14px; opacity: 0.8">
+          Requires macOS 13.0 (Ventura) or later
+        </p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <p>
+          &copy; 2025
+          <a href="https://eddmann.com" style="margin: 0; color: inherit"
+            >Edd Mann</a
+          >. Built with 🔒 for Mac.
+        </p>
+        <div style="margin-top: 20px">
+          <a href="https://github.com/eddmann/ClipVault" target="_blank"
+            >GitHub</a
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Intersection Observer for fade-in animations
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px',
+      };
+
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      }, observerOptions);
+
+      // Observe all fade-in elements
+      document.querySelectorAll('.fade-in').forEach(el => {
+        observer.observe(el);
+      });
+
+      // Add parallax effect to hero icon
+      let lastScroll = 0;
+      window.addEventListener('scroll', () => {
+        const currentScroll = window.pageYOffset;
+        const heroIcon = document.querySelector('.hero-icon');
+        if (heroIcon && currentScroll < 500) {
+          heroIcon.style.transform = `translateY(${currentScroll * 0.3}px)`;
+        }
+        lastScroll = currentScroll;
+      });
+    </script>
+  </body>
+</html>
