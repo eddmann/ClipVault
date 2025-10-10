@@ -22,6 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var settingsWindow: NSWindow?
     private var viewAllWindow: NSWindow?
+    private var previousFrontmostApp: NSRunningApplication?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Create status bar item
@@ -63,6 +64,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func showMenu() {
+        // Capture frontmost app BEFORE activating ClipVault (for auto-paste focus restoration)
+        previousFrontmostApp = NSWorkspace.shared.frontmostApplication
+
         // Reset search when opening menu
         currentSearchQuery = ""
 
@@ -268,8 +272,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if autoPaste {
             // Auto-paste is enabled - check permissions
             if pasteHelper.checkAccessibilityPermissions() {
-                // Have permissions - paste and show notification
-                _ = pasteHelper.pasteItem(item, autoPaste: true)
+                // Have permissions - paste and show notification (restore focus to previous app)
+                _ = pasteHelper.pasteItem(item, autoPaste: true, targetApp: previousFrontmostApp)
                 NotificationManager.shared.showPastedNotification()
             } else {
                 // No permissions - just prompt, don't copy
@@ -295,7 +299,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Check if we have accessibility permissions before attempting paste
         if pasteHelper.checkAccessibilityPermissions() {
-            _ = pasteHelper.pasteItem(item, autoPaste: true)
+            _ = pasteHelper.pasteItem(item, autoPaste: true, targetApp: previousFrontmostApp)
             NotificationManager.shared.showPastedNotification()
         } else {
             // No permissions - just prompt, don't copy

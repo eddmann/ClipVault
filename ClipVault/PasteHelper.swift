@@ -18,7 +18,11 @@ class PasteHelper {
     // MARK: - Public Methods
 
     /// Pastes the given item by writing it to the pasteboard and optionally simulating ⌘V
-    func pasteItem(_ item: ClipItem, autoPaste: Bool = false) -> Bool {
+    /// - Parameters:
+    ///   - item: The clipboard item to paste
+    ///   - autoPaste: Whether to automatically trigger ⌘V
+    ///   - targetApp: Optional target application to restore focus to before pasting
+    func pasteItem(_ item: ClipItem, autoPaste: Bool = false, targetApp: NSRunningApplication? = nil) -> Bool {
         // Write item to pasteboard
         let success = ClipItemManager.shared.writeToPasteboard(item)
 
@@ -32,9 +36,21 @@ class PasteHelper {
 
         // If auto-paste is enabled, synthesize ⌘V
         if autoPaste {
-            // Small delay to ensure pasteboard is updated
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
-                self?.synthesizeCommandV()
+            if let app = targetApp, !app.isTerminated {
+                // Restore focus to the target app before pasting
+                AppLogger.clipboard.debug("Restoring focus to app: \(app.bundleIdentifier ?? "unknown")")
+                app.activate(options: .activateIgnoringOtherApps)
+
+                // Wait for focus to transfer, then paste
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                    self?.synthesizeCommandV()
+                }
+            } else {
+                // No target app or app terminated - paste immediately (fallback)
+                AppLogger.clipboard.debug("No target app to restore focus")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                    self?.synthesizeCommandV()
+                }
             }
         }
 
