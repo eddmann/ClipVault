@@ -90,12 +90,24 @@ class EncryptionManager {
             kSecValueData as String: keyData
         ]
 
-        // Delete any existing key first
-        SecItemDelete(query as CFDictionary)
-
+        // Try to add the key first
         let status = SecItemAdd(query as CFDictionary, nil)
 
-        guard status == errSecSuccess else {
+        if status == errSecDuplicateItem {
+            // Key already exists, update it instead
+            let updateQuery: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrAccount as String: keyTag
+            ]
+            let attributesToUpdate: [String: Any] = [
+                kSecValueData as String: keyData
+            ]
+            let updateStatus = SecItemUpdate(updateQuery as CFDictionary, attributesToUpdate as CFDictionary)
+
+            guard updateStatus == errSecSuccess else {
+                throw EncryptionError.keychainError(updateStatus)
+            }
+        } else if status != errSecSuccess {
             throw EncryptionError.keychainError(status)
         }
     }
