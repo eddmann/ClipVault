@@ -37,7 +37,7 @@
     <meta property="og:title" content="ClipVault - Secure Clipboard Manager for macOS" />
     <meta
       property="og:description"
-      content="Free macOS clipboard manager with military-grade encryption. Never lose clipboard history again, with smart filtering and instant search."
+      content="Free macOS clipboard manager with AES-256-GCM encryption. Never lose clipboard history again, with smart filtering and instant search."
     />
     <meta
       property="og:image"
@@ -54,7 +54,7 @@
     />
     <meta
       property="twitter:description"
-      content="Free macOS clipboard manager with military-grade encryption. Never lose clipboard history again."
+      content="Free macOS clipboard manager with AES-256-GCM encryption. Never lose clipboard history again."
     />
     <meta
       property="twitter:image"
@@ -74,7 +74,7 @@
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "A secure, privacy-focused clipboard manager for macOS with AES-256 encryption, smart filtering, and instant search capabilities.",
+        "description": "A secure, privacy-focused clipboard manager for macOS with AES-256-GCM encryption, smart filtering, and instant search capabilities.",
         "downloadUrl": "https://github.com/eddmann/ClipVault/releases",
         "softwareVersion": "1.0.0",
         "author": {
@@ -594,39 +594,26 @@
 
         <div class="features-grid">
           <div class="feature-card fade-in">
-            <span class="feature-icon">🔒</span>
-            <h3 class="feature-title">Military-Grade Encryption</h3>
+            <span class="feature-icon">🔄</span>
+            <h3 class="feature-title">Automatic Clipboard Monitoring</h3>
             <p class="feature-description">
-              All clipboard content encrypted at rest using AES-256-GCM with
-              keys securely stored in macOS Keychain. Your data stays private.
+              Captures all clipboard changes in real-time. Works silently in the background with one-click paste support.
             </p>
           </div>
 
           <div class="feature-card fade-in">
-            <span class="feature-icon">🎯</span>
-            <h3 class="feature-title">Smart Filtering</h3>
+            <span class="feature-icon">🔒</span>
+            <h3 class="feature-title">AES-256-GCM Encryption</h3>
             <p class="feature-description">
-              Automatically detects and excludes sensitive content like
-              passwords, API keys, SSH keys, and credit cards. Privacy by
-              default.
+              All content encrypted at rest with keys in macOS Keychain. Smart filtering auto-detects and excludes passwords, API keys, SSH keys, and credit cards.
             </p>
           </div>
 
           <div class="feature-card fade-in">
             <span class="feature-icon">⚡</span>
-            <h3 class="feature-title">Instant Search</h3>
+            <h3 class="feature-title">Real-Time Search</h3>
             <p class="feature-description">
-              Lightning-fast search through your entire clipboard history.
-              Find any item in milliseconds with real-time filtering.
-            </p>
-          </div>
-
-          <div class="feature-card fade-in">
-            <span class="feature-icon">📌</span>
-            <h3 class="feature-title">Pin Important Items</h3>
-            <p class="feature-description">
-              Keep frequently used snippets at the top. Pinned items survive
-              history cleanup and stay accessible forever.
+              Instantly filter clipboard history. Pin important items to keep frequently used snippets at the top.
             </p>
           </div>
 
@@ -634,17 +621,7 @@
             <span class="feature-icon">🎨</span>
             <h3 class="feature-title">Rich Text Support</h3>
             <p class="feature-description">
-              Preserves formatting like bold, italic, colors, and fonts. RTF
-              content maintained exactly as you copied it.
-            </p>
-          </div>
-
-          <div class="feature-card fade-in">
-            <span class="feature-icon">🚫</span>
-            <h3 class="feature-title">App Exclusions</h3>
-            <p class="feature-description">
-              Exclude password managers and banking apps. Customize which
-              applications should never enter your clipboard history.
+              Preserves bold, italic, colors, and formatting. RTF content maintained exactly as you copied it.
             </p>
           </div>
 
@@ -652,47 +629,16 @@
             <span class="feature-icon">📱</span>
             <h3 class="feature-title">Source App Tracking</h3>
             <p class="feature-description">
-              See which app each clipboard item came from with native icons.
-              Filter history by source application.
+              See which app each clipboard item came from with native icons. Filter history by source application.
             </p>
           </div>
 
           <div class="feature-card fade-in">
-            <span class="feature-icon">✨</span>
-            <h3 class="feature-title">Visual Notifications</h3>
+            <span class="feature-icon">🚫</span>
+            <h3 class="feature-title">App Exclusions</h3>
             <p class="feature-description">
-              Instant on-screen feedback when copying or pasting. Beautiful,
-              non-intrusive notifications that auto-dismiss.
+              Exclude password managers and banking apps. Customize which applications should never enter your clipboard history.
             </p>
-          </div>
-
-          <div class="feature-card fade-in">
-            <span class="feature-icon">⚙️</span>
-            <h3 class="feature-title">Auto-Paste</h3>
-            <p class="feature-description">
-              One-click paste with automatic ⌘V simulation. Optional feature
-              for power users who need maximum efficiency.
-            </p>
-          </div>
-        </div>
-
-        <div class="demo-preview">
-          <h3
-            style="
-              text-align: center;
-              margin-bottom: 20px;
-              font-size: 20px;
-              color: var(--dark);
-            "
-          >
-            Lives in Your Menu Bar
-          </h3>
-          <div class="demo-image">
-            <!-- Screenshot will go here -->
-            <div>
-              <p style="margin-bottom: 10px; font-size: 14px; opacity: 0.8;">Menu bar interface with instant access</p>
-              <p style="font-size: 14px; opacity: 0.8;">Screenshot coming soon</p>
-            </div>
           </div>
         </div>
       </div>
@@ -734,9 +680,9 @@
     <!-- CTA Section -->
     <section class="cta" id="download">
       <div class="container">
-        <h2>Ready to Secure Your Clipboard?</h2>
+        <h2>Ready to Get Started?</h2>
         <p>
-          Download ClipVault today. Free, open source, and built for privacy.
+          Free, open source, and built for privacy.
         </p>
         <a
           href="https://github.com/eddmann/ClipVault/releases"
