@@ -29,9 +29,9 @@ xattr -cr /Applications/ClipVault.app
 
 ## Usage
 
-Click the menu bar icon to view recent clipboard history and pinned items.
-Use real-time search to instantly find any item you're looking for.
-Click an item to copy it, or select "View All Clipboard History" to browse your complete history.
+- Click the menu bar icon to view recent clipboard history and pinned items
+- Use real-time search to instantly find any item you're looking for
+- Click an item to copy it, or select "View All Clipboard History" to browse your complete history
 
 ## Requirements
 
