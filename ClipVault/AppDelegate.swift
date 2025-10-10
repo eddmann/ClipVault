@@ -118,7 +118,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Configure visual properties for better visibility
         searchField.focusRingType = .default
         searchField.isBordered = true
-        searchField.bezelStyle = .roundedBezel
+        searchField.bezelStyle = .squareBezel
         searchField.drawsBackground = true
 
         containerView.addSubview(searchField)
