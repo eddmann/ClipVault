@@ -74,18 +74,17 @@ jobs:
           ### Features
 
           - **Automatic clipboard monitoring** - Captures all clipboard changes in real-time
-          - **Military-grade encryption** - AES-256-GCM encryption with Keychain storage
-          - **Smart filtering** - Automatically excludes passwords, API keys, and sensitive content
-          - **Real-time search** - Instantly search through clipboard history
-          - **Pin important items** - Keep frequently used snippets at the top
-          - **Visual notifications** - Animated on-screen feedback for copy/paste actions
-          - **Auto-paste** - One-click paste without manual keyboard commands
-          - **Source app tracking** - See which app each clipboard item came from
+          - **AES-256-GCM encryption** - All content encrypted at rest with keys in macOS Keychain
+          - **Smart content filtering** - Auto-detects and excludes passwords, API keys, SSH keys, credit cards
           - **Rich text support** - Preserves bold, italic, colors, and formatting
+          - **Source app tracking** - See which app each item came from with native icons
+          - **Pin important items** - Keep frequently used snippets at the top
+          - **Real-time search** - Instantly filter clipboard history
+          - **Auto-paste** - One-click paste without keyboard commands
 
           ### Requirements
 
-          - macOS 13.0 (Ventura) or later
+          - macOS 12.0 (Monterey) or later
           - Universal Binary (Intel + Apple Silicon)
 
           ### Notes
