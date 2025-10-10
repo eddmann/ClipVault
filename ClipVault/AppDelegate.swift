@@ -89,7 +89,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func showContextMenu() {
         let contextMenu = NSMenu()
 
-        contextMenu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ""))
+        contextMenu.addItem(NSMenuItem(title: "Settings", action: #selector(openSettings), keyEquivalent: ""))
         contextMenu.addItem(NSMenuItem.separator())
         contextMenu.addItem(NSMenuItem(title: "Quit ClipVault", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
 
@@ -138,8 +138,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem.separator())
 
         // Footer
-        menu.addItem(NSMenuItem(title: "View All...", action: #selector(openViewAll), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Clipboard History", action: #selector(openViewAll), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Settings", action: #selector(openSettings), keyEquivalent: ""))
     }
 
     private func addResultsToMenu(at insertIndex: Int? = nil) {
