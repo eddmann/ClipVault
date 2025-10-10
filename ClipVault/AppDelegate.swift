@@ -35,7 +35,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         // Set up clipboard monitor
-        clipboardMonitor.onNewClipDetected = { [weak self] item in
+        clipboardMonitor.onNewClipDetected = { item in
             let itemId = AppLogger.formatItemId(item.id)
             AppLogger.ui.debug("New clip detected (id: \(itemId, privacy: .public), pinned: \(item.isPinned))")
         }
