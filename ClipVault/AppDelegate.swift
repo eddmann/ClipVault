@@ -73,16 +73,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         buildMainMenu()
         statusItem.menu = menu
 
-        // Activate app so focus states render properly (needed for LSUIElement apps)
-        NSApp.activate(ignoringOtherApps: true)
-
         statusItem.button?.performClick(nil)
-
-        // Focus search field after menu is displayed
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            self.searchField.window?.makeFirstResponder(self.searchField)
-        }
 
         // Clear menu reference after showing (so button click works next time)
         DispatchQueue.main.async { [weak self] in
@@ -120,6 +111,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         searchField.isBordered = true
         searchField.bezelStyle = .squareBezel
         searchField.drawsBackground = true
+        
+        searchField.refusesFirstResponder = true
 
         containerView.addSubview(searchField)
 
