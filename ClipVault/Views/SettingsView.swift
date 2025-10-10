@@ -8,6 +8,7 @@
 import SwiftUI
 import Combine
 import UniformTypeIdentifiers
+import OSLog
 
 struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
@@ -436,8 +437,9 @@ class SettingsViewModel: ObservableObject {
     func clearHistory() {
         do {
             try ClipItemManager.shared.clearHistory()
+            AppLogger.ui.info("Cleared clipboard history from settings")
         } catch {
-            print("SettingsViewModel: Error clearing history: \(error)")
+            AppLogger.ui.error("Failed to clear history: \(error.localizedDescription, privacy: .public)")
         }
     }
 

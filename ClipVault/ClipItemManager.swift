@@ -8,6 +8,7 @@
 import Foundation
 import CoreData
 import AppKit
+import OSLog
 
 class ClipItemManager {
     static let shared = ClipItemManager()
@@ -18,11 +19,11 @@ class ClipItemManager {
 
         container.loadPersistentStores { description, error in
             if let error = error {
-                print("ClipItemManager: Error loading persistent store: \(error)")
-                print("ClipItemManager: Store URL: \(description.url?.path ?? "unknown")")
+                AppLogger.persistence.error("Failed to load persistent store: \(error.localizedDescription, privacy: .public)")
+                AppLogger.persistence.error("Store URL: \(description.url?.path ?? "unknown", privacy: .public)")
                 fatalError("Unable to load persistent stores: \(error)")
             }
-            print("ClipItemManager: Successfully loaded persistent store at: \(description.url?.path ?? "unknown")")
+            AppLogger.persistence.info("Loaded Core Data store at: \(description.url?.path ?? "unknown", privacy: .public)")
         }
 
         container.viewContext.automaticallyMergesChangesFromParent = true

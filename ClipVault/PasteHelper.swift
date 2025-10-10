@@ -8,6 +8,7 @@
 import Foundation
 import AppKit
 import CoreGraphics
+import OSLog
 
 class PasteHelper {
     static let shared = PasteHelper()
@@ -22,9 +23,12 @@ class PasteHelper {
         let success = ClipItemManager.shared.writeToPasteboard(item)
 
         guard success else {
-            print("PasteHelper: Failed to write item to pasteboard")
+            AppLogger.clipboard.error("Failed to write item to pasteboard")
             return false
         }
+
+        let itemId = AppLogger.formatItemId(item.id)
+        AppLogger.clipboard.debug("Wrote to pasteboard (id: \(itemId, privacy: .public), autoPaste: \(autoPaste))")
 
         // If auto-paste is enabled, synthesize ⌘V
         if autoPaste {
@@ -41,7 +45,7 @@ class PasteHelper {
     func synthesizeCommandV() {
         // Check if we have accessibility permissions
         guard checkAccessibilityPermissions() else {
-            print("PasteHelper: Accessibility permissions required for auto-paste")
+            AppLogger.clipboard.error("Accessibility permissions required for auto-paste")
             return
         }
 
@@ -60,7 +64,7 @@ class PasteHelper {
             keyUpEvent.post(tap: .cghidEventTap)
         }
 
-        print("PasteHelper: Synthesized ⌘V")
+        AppLogger.clipboard.debug("Synthesized ⌘V keypress")
     }
 
     /// Checks if the app has accessibility permissions

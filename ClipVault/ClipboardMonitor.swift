@@ -7,6 +7,7 @@
 
 import Foundation
 import AppKit
+import OSLog
 
 class ClipboardMonitor {
     static let shared = ClipboardMonitor()
@@ -43,7 +44,7 @@ class ClipboardMonitor {
         }
 
         isMonitoring = true
-        print("ClipboardMonitor: Started monitoring")
+        AppLogger.clipboard.info("Started monitoring (interval: \(interval, format: .fixed(precision: 1))s)")
     }
 
     /// Stops monitoring the clipboard
@@ -51,7 +52,7 @@ class ClipboardMonitor {
         timer?.invalidate()
         timer = nil
         isMonitoring = false
-        print("ClipboardMonitor: Stopped monitoring")
+        AppLogger.clipboard.info("Stopped monitoring")
     }
 
     // MARK: - Private Methods
@@ -77,7 +78,7 @@ class ClipboardMonitor {
 
         // Check if this app should be excluded
         if let bundleID = appBundleID, exclusionManager.shouldExclude(appBundleID: bundleID) {
-            print("ClipboardMonitor: Skipping capture from excluded app: \(bundleID)")
+            AppLogger.privacy.debug("Skipped capture: excluded app [\(bundleID, privacy: .public)]")
             return
         }
 
@@ -99,7 +100,7 @@ class ClipboardMonitor {
 
                 // Check if plain text content should be filtered
                 if settings.contentFilterEnabled, exclusionManager.isLikelySensitive(content: plainText) {
-                    print("ClipboardMonitor: Skipping likely sensitive RTF content")
+                    AppLogger.privacy.debug("Skipped capture: sensitive content detected (RTF)")
                     return
                 }
 
@@ -108,16 +109,16 @@ class ClipboardMonitor {
                     appBundleID: appBundleID
                 )
                 onNewClipDetected?(item)
-                print("ClipboardMonitor: ✓ Captured RTF format (\(rtfData.count) bytes, \(plainText.count) chars)")
+                AppLogger.clipboard.debug("Captured RTF (bytes: \(rtfData.count), chars: \(plainText.count), app: \(appBundleID ?? "unknown", privacy: .public))")
             } catch {
-                print("ClipboardMonitor: Error saving RTF item: \(error)")
+                AppLogger.clipboard.error("Failed to save RTF item: \(error.localizedDescription, privacy: .public)")
             }
         }
         // Priority 2: Plain text (only if RTF not available)
         else if settings.captureText, let string = pasteboard.string(forType: .string), !string.isEmpty {
             // Check if content should be filtered
             if settings.contentFilterEnabled, exclusionManager.isLikelySensitive(content: string) {
-                print("ClipboardMonitor: Skipping likely sensitive content")
+                AppLogger.privacy.debug("Skipped capture: sensitive content detected (text)")
                 return
             }
 
@@ -127,13 +128,13 @@ class ClipboardMonitor {
                     appBundleID: appBundleID
                 )
                 onNewClipDetected?(item)
-                print("ClipboardMonitor: ✓ Captured plain text format (\(string.prefix(50))...)")
+                AppLogger.clipboard.debug("Captured text (chars: \(string.count), app: \(appBundleID ?? "unknown", privacy: .public))")
             } catch {
-                print("ClipboardMonitor: Error saving text item: \(error)")
+                AppLogger.clipboard.error("Failed to save text item: \(error.localizedDescription, privacy: .public)")
             }
         }
         else {
-            print("ClipboardMonitor: No text content detected or text capture disabled")
+            AppLogger.clipboard.debug("Skipped capture: no text content or capture disabled")
         }
     }
 }

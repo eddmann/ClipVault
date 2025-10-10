@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import OSLog
 
 struct ClipboardHistoryView: View {
     @StateObject private var viewModel = ClipboardHistoryViewModel()
@@ -194,8 +195,9 @@ class ClipboardHistoryViewModel: ObservableObject {
     func refresh() {
         do {
             items = try itemManager.fetchAllItems()
+            AppLogger.ui.debug("Refreshed items (count: \(self.items.count))")
         } catch {
-            print("ClipboardHistoryViewModel: Error fetching items: \(error)")
+            AppLogger.ui.error("Failed to fetch items: \(error.localizedDescription, privacy: .public)")
             items = []
         }
     }
@@ -204,22 +206,28 @@ class ClipboardHistoryViewModel: ObservableObject {
         do {
             try itemManager.togglePin(item: item)
             refresh()
+            let itemId = AppLogger.formatItemId(item.id)
+            AppLogger.ui.debug("Toggled pin (id: \(itemId, privacy: .public))")
         } catch {
-            print("ClipboardHistoryViewModel: Error toggling pin: \(error)")
+            AppLogger.ui.error("Failed to toggle pin: \(error.localizedDescription, privacy: .public)")
         }
     }
 
     func copyToClipboard(item: ClipItem) {
         _ = itemManager.writeToPasteboard(item)
         NotificationManager.shared.showCopiedNotification()
+        let itemId = AppLogger.formatItemId(item.id)
+        AppLogger.ui.debug("Copied to clipboard (id: \(itemId, privacy: .public))")
     }
 
     func deleteItem(item: ClipItem) {
+        let itemId = AppLogger.formatItemId(item.id)
         do {
             try itemManager.deleteItem(item)
             refresh()
+            AppLogger.ui.debug("Deleted item (id: \(itemId, privacy: .public))")
         } catch {
-            print("ClipboardHistoryViewModel: Error deleting item: \(error)")
+            AppLogger.ui.error("Failed to delete item: \(error.localizedDescription, privacy: .public)")
         }
     }
 

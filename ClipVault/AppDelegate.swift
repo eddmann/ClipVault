@@ -7,6 +7,7 @@
 
 import AppKit
 import SwiftUI
+import OSLog
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
@@ -35,11 +36,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Set up clipboard monitor
         clipboardMonitor.onNewClipDetected = { [weak self] item in
-            print("AppDelegate: New clip detected - \(item.getPreviewText())")
+            let itemId = AppLogger.formatItemId(item.id)
+            AppLogger.ui.debug("New clip detected (id: \(itemId, privacy: .public), pinned: \(item.isPinned))")
         }
         clipboardMonitor.startMonitoring()
 
-        print("ClipVault: Started successfully")
+        AppLogger.lifecycle.info("Application started successfully")
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -239,7 +241,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func searchFieldTextDidChange(_ notification: Notification) {
         currentSearchQuery = searchField.stringValue
 
-        print("Search text changed to: '\(currentSearchQuery)'")
+        AppLogger.ui.debug("Search query changed (length: \(self.currentSearchQuery.count))")
 
         // Remove all items except search field (index 0), separator (index 1), final separator and footer
         // Count backwards to avoid index issues
@@ -276,7 +278,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             // Auto-paste disabled - just copy
             _ = pasteHelper.pasteItem(item, autoPaste: false)
-            print("AppDelegate: Item copied to clipboard")
+            let itemId = AppLogger.formatItemId(item.id)
+            AppLogger.ui.debug("Item copied (id: \(itemId, privacy: .public))")
             NotificationManager.shared.showCopiedNotification()
         }
     }
@@ -304,17 +307,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         guard let item = sender.representedObject as? ClipItem else { return }
         do {
             try itemManager.togglePin(item: item)
+            let itemId = AppLogger.formatItemId(item.id)
+            AppLogger.ui.debug("Toggled pin (id: \(itemId, privacy: .public), pinned: \(item.isPinned))")
         } catch {
-            print("AppDelegate: Error toggling pin: \(error)")
+            AppLogger.ui.error("Failed to toggle pin: \(error.localizedDescription, privacy: .public)")
         }
     }
 
     @objc private func deleteItem(_ sender: NSMenuItem) {
         guard let item = sender.representedObject as? ClipItem else { return }
+        let itemId = AppLogger.formatItemId(item.id)
         do {
             try itemManager.deleteItem(item)
+            AppLogger.ui.debug("Deleted item (id: \(itemId, privacy: .public))")
         } catch {
-            print("AppDelegate: Error deleting item: \(error)")
+            AppLogger.ui.error("Failed to delete item: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -330,9 +337,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if response == .alertFirstButtonReturn {
             do {
                 try itemManager.clearHistory()
-                print("AppDelegate: Cleared clipboard history")
+                AppLogger.ui.info("Cleared clipboard history")
             } catch {
-                print("AppDelegate: Error clearing history: \(error)")
+                AppLogger.ui.error("Failed to clear history: \(error.localizedDescription, privacy: .public)")
             }
         }
     }
@@ -389,9 +396,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         do {
             if let item = try itemManager.fetchMostRecentItem() {
                 _ = pasteHelper.pasteItem(item, autoPaste: true)
+                let itemId = AppLogger.formatItemId(item.id)
+                AppLogger.ui.debug("Pasted last item (id: \(itemId, privacy: .public))")
             }
         } catch {
-            print("AppDelegate: Error pasting last item: \(error)")
+            AppLogger.ui.error("Failed to paste last item: \(error.localizedDescription, privacy: .public)")
         }
     }
 }

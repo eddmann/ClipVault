@@ -1,7 +1,7 @@
 # ClipVault - Implementation Guide
 
-**Version:** 1.1
-**Last Updated:** October 9, 2025
+**Version:** 1.2
+**Last Updated:** October 10, 2025
 **Swift Version:** 5.9+
 **Minimum macOS:** 12.0 (Monterey)
 
@@ -65,6 +65,7 @@ ClipVault follows a **layered architecture** pattern with clear separation of co
 ## Technology Stack
 
 ### Frameworks & Libraries
+
 - **AppKit**: Native macOS UI framework for menu bar interface and panels
 - **SwiftUI**: Modern UI framework for settings window and notifications
 - **Core Data**: Persistent storage with object-relational mapping
@@ -72,8 +73,10 @@ ClipVault follows a **layered architecture** pattern with clear separation of co
 - **Security**: Keychain Services for key storage
 - **CoreGraphics**: Low-level event synthesis for auto-paste
 - **Combine**: Reactive programming for settings binding
+- **OSLog**: Apple's unified logging system for structured, privacy-aware logging
 
 ### Development Tools
+
 - **Xcode**: 15.0+ (required for Swift 5.9 features)
 - **Swift**: 5.9+ (leverages latest language features)
 - **Git**: Version control
@@ -106,7 +109,8 @@ ClipVault/
 │   │   ├── SettingsManager.swift      # UserDefaults wrapper
 │   │   ├── ExclusionManager.swift     # Content/app filtering
 │   │   ├── PasteHelper.swift          # Auto-paste functionality
-│   │   └── NotificationManager.swift  # Visual notification system
+│   │   ├── NotificationManager.swift  # Visual notification system
+│   │   └── AppLogger.swift            # Centralized logging infrastructure
 │   │
 │   └── ClipVault.xcdatamodeld/
 │       └── ClipVault.xcdatamodel/
@@ -128,6 +132,7 @@ ClipVault/
 **Location**: `ClipVault/AppDelegate.swift` (398 lines)
 
 **Key Responsibilities:**
+
 - Creates and manages NSStatusItem (menu bar icon)
 - Builds dynamic NSMenu with clipboard history
 - Handles search field for real-time filtering
@@ -180,18 +185,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 ```
 
 **Menu Bar Icon:**
+
 ```swift
 button.image = NSImage(systemSymbolName: "list.clipboard.fill",
                        accessibilityDescription: "ClipVault")
 ```
 
 **Search Implementation:**
+
 - Uses `NotificationCenter.default.addObserver` for `NSControl.textDidChangeNotification`
 - Updates menu in real-time by removing/rebuilding results section
 - Preserves search field text during updates
 - Maintains focus on search field during typing
 
 **Notification Integration:**
+
 ```swift
 // Show "Copied!" notification when copying
 NotificationManager.shared.showCopiedNotification()
@@ -211,6 +219,7 @@ NotificationManager.shared.showPastedNotification()
 **Location**: `ClipVault/ClipboardMonitor.swift` (140 lines)
 
 **Architecture:**
+
 - Uses **polling** approach (checks NSPasteboard.general.changeCount every 300ms)
 - Singleton pattern (`ClipboardMonitor.shared`)
 - Callback-based notification when new clip detected
@@ -238,6 +247,7 @@ class ClipboardMonitor {
 ```
 
 **Capture Flow:**
+
 1. Detect changeCount increment
 2. **Get frontmost application bundle ID** (for source tracking)
 3. Check exclusion rules (app + content filtering)
@@ -246,6 +256,7 @@ class ClipboardMonitor {
 6. Invoke callback if successful
 
 **Priority Order (IMPORTANT):**
+
 ```swift
 // Priority 1: RTF (preserves formatting like bold, italic, colors)
 if settings.captureRTF, let rtfData = pasteboard.data(forType: .rtf), !rtfData.isEmpty {
@@ -260,6 +271,7 @@ else if settings.captureText, let string = pasteboard.string(forType: .string), 
 ```
 
 **Source App Tracking:**
+
 ```swift
 // Get frontmost application
 let frontmostApp = NSWorkspace.shared.frontmostApplication
@@ -269,6 +281,7 @@ let appBundleID = frontmostApp?.bundleIdentifier
 ```
 
 This enables:
+
 - App icon display in menu and View All window
 - Filtering by source application
 - App-based exclusions
@@ -285,6 +298,7 @@ This enables:
 **Location**: `ClipVault/ClipItemManager.swift` (198 lines)
 
 **Responsibilities:**
+
 - Core Data stack initialization
 - CRUD operations on ClipItem entities
 - Encryption/decryption coordination
@@ -336,6 +350,7 @@ class ClipItemManager {
 ```
 
 **ClipContent Enum:**
+
 ```swift
 enum ClipContent {
     case text(String)
@@ -344,6 +359,7 @@ enum ClipContent {
 ```
 
 **Deduplication Strategy:**
+
 - Compute SHA-256 hash of content before saving
 - For RTF content, hash is based on plain text (so same content with different formatting = duplicate)
 - Check if hash exists in database
@@ -364,6 +380,7 @@ Uses Core Data's default persistent store location within the app's sandbox cont
 **Location**: `ClipVault/NotificationManager.swift` (150 lines)
 
 **Architecture:**
+
 - Singleton pattern (`NotificationManager.shared`)
 - Uses NSPanel for overlay display
 - SwiftUI-based notification view
@@ -401,6 +418,7 @@ class NotificationManager {
 ```
 
 **NotificationState (ObservableObject):**
+
 ```swift
 class NotificationState: ObservableObject {
     @Published var isVisible: Bool = false
@@ -412,6 +430,7 @@ class NotificationState: ObservableObject {
 ```
 
 **Display Flow:**
+
 1. Called from AppDelegate when copy/paste action occurs
 2. Creates NSPanel if doesn't exist (or reuses existing)
 3. Positions panel in center of main screen
@@ -420,6 +439,7 @@ class NotificationState: ObservableObject {
 6. Fades out with animation
 
 **Panel Configuration:**
+
 ```swift
 let panel = NSPanel(
     contentRect: NSRect(x: 0, y: 0, width: 200, height: 80),
@@ -447,6 +467,7 @@ panel.hasShadow = false
 **Location**: `ClipVault/Views/CopyNotificationView.swift` (47 lines)
 
 **Design:**
+
 - Checkmark icon + message text
 - Semi-transparent dark background
 - Spring animation for appearance
@@ -488,6 +509,7 @@ struct CopyNotificationView: View {
 ```
 
 **Visual Characteristics:**
+
 - **Size**: Dynamic based on content
 - **Background**: Black with 85% opacity
 - **Border**: White with 20% opacity
@@ -505,6 +527,7 @@ struct CopyNotificationView: View {
 **Location**: `ClipVault/EncryptionManager.swift` (148 lines)
 
 **Security Design:**
+
 - Uses **AES-256-GCM** (authenticated encryption)
 - Symmetric key generated once and stored in Keychain
 - Key never leaves device (not synced)
@@ -541,6 +564,7 @@ class EncryptionManager {
 ```
 
 **Keychain Configuration:**
+
 ```swift
 let query: [String: Any] = [
     kSecClass as String: kSecClassGenericPassword,
@@ -551,6 +575,7 @@ let query: [String: Any] = [
 ```
 
 **AES-GCM Flow:**
+
 ```swift
 // Encryption
 let key = try getOrCreateKey()
@@ -563,6 +588,7 @@ return try AES.GCM.open(sealedBox, using: key)
 ```
 
 **Error Handling:**
+
 ```swift
 enum EncryptionError: Error, LocalizedError {
     case encryptionFailed
@@ -585,6 +611,7 @@ enum EncryptionError: Error, LocalizedError {
 **Location**: `ClipVault/ExclusionManager.swift` (152 lines)
 
 **Two-Layer Filtering:**
+
 1. **App-Based**: Exclude entire applications
 2. **Content-Based**: Heuristic pattern matching
 
@@ -612,6 +639,7 @@ class ExclusionManager {
 ```
 
 **Default Excluded Apps:**
+
 ```swift
 private let defaultExcludedApps = [
     "com.agilebits.onepassword7",
@@ -624,6 +652,7 @@ private let defaultExcludedApps = [
 ```
 
 **Content Detection Patterns:**
+
 1. **JWT Tokens**: Starts with "eyJ", length > 50
 2. **SSH Keys**: Contains "-----BEGIN" + "PRIVATE KEY"
 3. **API Keys**: Long alphanumeric (20-200 chars, >90% alphanum)
@@ -641,6 +670,7 @@ private let defaultExcludedApps = [
 **Location**: `ClipVault/PasteHelper.swift` (105 lines)
 
 **Mechanism:**
+
 - Writes item to NSPasteboard
 - Synthesizes ⌘V keypress using CGEvent API
 - Requires Accessibility permissions
@@ -666,6 +696,7 @@ class PasteHelper {
 ```
 
 **CGEvent Synthesis:**
+
 ```swift
 let vKeyCode: CGKeyCode = 9 // V key
 
@@ -685,6 +716,7 @@ keyUpEvent?.post(tap: .cghidEventTap)
 ```
 
 **Timing:**
+
 ```swift
 // 50ms delay ensures pasteboard is updated before paste
 DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
@@ -705,16 +737,19 @@ DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
 **Settings Categories:**
 
 **General:**
+
 - `maxHistoryItems: Int` (50-500 with preset options, default: 100)
 - `captureText: Bool` (default: true) - **Internal flag**, not exposed in UI
 - `captureRTF: Bool` (default: true) - Exposed in UI as "Capture Rich Text Formatting"
 - `autoPasteOnSelect: Bool` (default: false)
 
 **Privacy:**
+
 - `contentFilterEnabled: Bool` (default: true)
 - `excludedAppBundleIDs: [String]` (default: [])
 
 **Helper Methods:**
+
 ```swift
 func addExcludedApp(bundleID: String)
 func removeExcludedApp(bundleID: String)
@@ -727,13 +762,90 @@ func resetToDefaults()
 
 ---
 
-### 10. SettingsView.swift
+### 10. AppLogger.swift
+
+**Purpose**: Centralized logging infrastructure using Apple's unified logging system
+
+**Location**: `ClipVault/Managers/AppLogger.swift` (~150 lines)
+
+**Key Features:**
+
+- **Structured logging** with subsystems and categories
+- **Privacy-aware** - automatic redaction of sensitive data
+- **Performance optimized** - debug logs have near-zero cost when disabled
+- **System integration** - works with Console.app and `log` command
+- **Persistent** - logs stored by macOS, queryable later
+
+**Log Categories:**
+
+```swift
+struct AppLogger {
+    static let clipboard    // Clipboard monitoring, capture, paste operations
+    static let encryption   // Encryption/decryption, key management, keychain
+    static let persistence  // Core Data fetch, save, delete, migration
+    static let ui           // Menu actions, window lifecycle, user interactions
+    static let privacy      // Content filtering, app exclusions, sensitive data
+    static let settings     // UserDefaults changes, configuration updates
+    static let lifecycle    // App startup, shutdown, state transitions
+}
+```
+
+**Usage Examples:**
+
+```swift
+// Lifecycle events (always logged)
+AppLogger.lifecycle.info("Application started successfully")
+
+// Debug information (only in debug mode)
+AppLogger.clipboard.debug("Captured text (chars: \(count), app: \(bundleID, privacy: .public))")
+
+// Errors (always logged)
+AppLogger.persistence.error("Failed to save item: \(error.localizedDescription, privacy: .public)")
+```
+
+**Privacy Helpers:**
+
+```swift
+// Format item IDs safely (first 8 chars only)
+let itemId = AppLogger.formatItemId(item.id)
+AppLogger.ui.debug("Deleted item (id: \(itemId, privacy: .public))")
+
+// Format content metadata without exposing actual content
+let metadata = AppLogger.formatContentMetadata(charCount: 150, byteCount: 200)
+AppLogger.clipboard.debug("Captured RTF: \(metadata, privacy: .public)")
+```
+
+**Viewing Logs:**
+
+```bash
+# Real-time streaming
+log stream --predicate 'subsystem == "com.clipvault"'
+
+# Last hour of clipboard operations
+log show --predicate 'subsystem == "com.clipvault" AND category == "clipboard"' --last 1h
+
+# Only errors
+log show --predicate 'subsystem == "com.clipvault" AND messageType == error' --last 24h
+```
+
+**Key Benefits:**
+
+- No sensitive clipboard content logged (only metadata)
+- Automatic timestamps, process info, thread info
+- Can be viewed in Console.app or via terminal
+- Debug logs automatically disabled in release builds
+- Structured queries for debugging specific issues
+
+---
+
+### 11. SettingsView.swift
 
 **Purpose**: SwiftUI-based settings interface
 
 **Location**: `ClipVault/Views/SettingsView.swift` (485 lines)
 
 **Architecture:**
+
 - TabView with 3 tabs: General, Privacy, About
 - MVVM pattern with SettingsViewModel
 - Two-way binding with @Published properties
@@ -742,6 +854,7 @@ func resetToDefaults()
 **Tabs:**
 
 **1. General Tab (Line 39-169):**
+
 - **Clipboard Capture Section:**
   - Maximum History Items: Dropdown picker (50-500)
   - Capture Rich Text Formatting: Toggle (captureRTF)
@@ -751,6 +864,7 @@ func resetToDefaults()
   - Clear All History button (confirmation dialog)
 
 **2. Privacy Tab (Line 173-315):**
+
 - **Content Filtering Section:**
   - Filter Sensitive Content: Toggle
   - Description of what it filters
@@ -766,6 +880,7 @@ func resetToDefaults()
   - "All clipboard content is encrypted at rest using AES-256-GCM"
 
 **3. About Tab (Line 319-391):**
+
 - App icon (128x128, rounded corners, shadow)
 - App name "ClipVault" (28pt semibold)
 - Version and build number from Bundle
@@ -774,6 +889,7 @@ func resetToDefaults()
 - GitHub link button (https://github.com/eddmann/ClipVault)
 
 **ViewModel Pattern (Line 395-478):**
+
 ```swift
 class SettingsViewModel: ObservableObject {
     @Published var maxHistoryItems: Int {
@@ -800,6 +916,7 @@ class SettingsViewModel: ObservableObject {
 ```
 
 **Window Configuration:**
+
 - Size: 550x500 (fixed)
 - 12px padding below title bar
 - ScrollView for each tab
@@ -809,13 +926,14 @@ class SettingsViewModel: ObservableObject {
 
 ---
 
-### 11. ClipboardHistoryView.swift
+### 12. ClipboardHistoryView.swift
 
 **Purpose**: Full-screen view for browsing and managing clipboard history
 
 **Location**: `ClipVault/Views/ClipboardHistoryView.swift` (247 lines)
 
 **Architecture:**
+
 - SwiftUI Table view with sortable columns
 - Real-time search filtering
 - App-based filtering via dropdown
@@ -824,6 +942,7 @@ class SettingsViewModel: ObservableObject {
 **Key Features:**
 
 **1. Source App Filtering:**
+
 ```swift
 @Published var selectedAppFilter: String? = nil
 
@@ -855,6 +974,7 @@ var filteredItems: [ClipItem] {
 ```
 
 **2. Toolbar Controls:**
+
 - Search field (250px width)
 - App filter dropdown (250px width)
   - "All Apps" option
@@ -864,12 +984,14 @@ var filteredItems: [ClipItem] {
 - Results count display
 
 **3. Table Columns:**
+
 - **Preview**: Text preview with RTF indicator icon (textformat SF Symbol)
 - **Time**: Relative time string (e.g., "2m ago")
 - **App**: Source app icon (16x16) and name
 - **Actions**: Pin, Copy, Delete buttons
 
 **App Icon Display:**
+
 ```swift
 if let bundleID = item.appBundleID {
     HStack(spacing: 6) {
@@ -897,12 +1019,14 @@ if let bundleID = item.appBundleID {
 ```
 
 **Window Configuration:**
+
 - Size: 900x600 (resizable)
 - Minimum size: 800x500
 - Opens via "View All..." menu item
 
 **Notification Integration:**
 When copying item from View All window, shows visual "Copied!" notification:
+
 ```swift
 func copyToClipboard(item: ClipItem) {
     _ = itemManager.writeToPasteboard(item)
@@ -923,22 +1047,24 @@ func copyToClipboard(item: ClipItem) {
 
 **Attributes:**
 
-| Attribute | Type | Optional | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `id` | UUID | No | - | Unique identifier |
-| `dateAdded` | Date | No | - | Timestamp of capture |
-| `isPinned` | Boolean | No | NO | Pin status |
-| `textContent` | Binary Data | Yes | - | Encrypted text (plain or RTF preview) |
-| `rtfData` | Binary Data | Yes | - | Encrypted RTF data (for pasting) |
-| `appBundleID` | String | Yes | - | Source app identifier |
-| `contentHash` | String | No | - | SHA-256 for deduplication |
+| Attribute     | Type        | Optional | Default | Description                           |
+| ------------- | ----------- | -------- | ------- | ------------------------------------- |
+| `id`          | UUID        | No       | -       | Unique identifier                     |
+| `dateAdded`   | Date        | No       | -       | Timestamp of capture                  |
+| `isPinned`    | Boolean     | No       | NO      | Pin status                            |
+| `textContent` | Binary Data | No       | -       | Encrypted text (plain or RTF preview) |
+| `rtfData`     | Binary Data | Yes      | -       | Encrypted RTF data (for pasting)      |
+| `appBundleID` | String      | Yes      | -       | Source app identifier                 |
+| `contentHash` | String      | No       | -       | SHA-256 for deduplication             |
 
 **Indexes:**
+
 - `dateAdded` (for sorting)
 - `isPinned` (for filtering)
 - `contentHash` (for deduplication)
 
 **Uniqueness Constraint:**
+
 - `contentHash` (prevents duplicates at database level)
 
 **Auto-Generated Properties:**
@@ -955,6 +1081,8 @@ extension ClipItem {
     @NSManaged public var textContent: Data?
 }
 ```
+
+**Note**: Core Data auto-generates all properties as optional Swift types (e.g., `Data?`) even if marked as non-optional in the model. The actual optionality is enforced at the Core Data level, not the Swift type level. Required fields (`textContent`, `contentHash`, etc.) will cause validation errors if left nil at save time.
 
 **Custom Extensions:**
 Located in: `ClipVault/Models/ClipItem+Extensions.swift`
@@ -979,6 +1107,7 @@ extension ClipItem {
 ```
 
 **Fetch Requests:**
+
 ```swift
 // All items (pinned first, then by date descending)
 static func fetchAllRequest() -> NSFetchRequest<ClipItem> {
@@ -1008,6 +1137,7 @@ static func fetchByHashRequest(hash: String) -> NSFetchRequest<ClipItem> {
 **Algorithm**: AES-256-GCM (Advanced Encryption Standard with Galois/Counter Mode)
 
 **Why AES-GCM?**
+
 - **Authenticated Encryption**: Provides both confidentiality and authenticity
 - **AEAD Mode**: Detects tampering automatically
 - **Performance**: Hardware-accelerated on modern CPUs
@@ -1016,11 +1146,13 @@ static func fetchByHashRequest(hash: String) -> NSFetchRequest<ClipItem> {
 **Key Management:**
 
 1. **Key Generation** (first launch):
+
 ```swift
 let key = SymmetricKey(size: .bits256) // 256-bit key
 ```
 
 2. **Key Storage** (Keychain):
+
 ```swift
 kSecAttrAccessible: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
 // Key only accessible when device unlocked
@@ -1028,6 +1160,7 @@ kSecAttrAccessible: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
 ```
 
 3. **Key Retrieval**:
+
 ```swift
 // Check cache first
 if let cachedKey = cachedKey {
@@ -1129,11 +1262,68 @@ cachedKey = key // Cache for performance
 
 ---
 
+### Logging Security
+
+**Privacy-Aware Logging:**
+
+ClipVault uses Apple's unified logging system with privacy protections:
+
+```swift
+// ✅ SAFE: Logs metadata only, no clipboard content
+AppLogger.clipboard.debug("Captured text (chars: \(count), app: \(bundleID, privacy: .public))")
+
+// ❌ NEVER: Don't log actual clipboard content
+// AppLogger.clipboard.debug("Content: \(clipboardText)")
+```
+
+**Key Privacy Features:**
+
+1. **Automatic Redaction**: Dynamic data marked `.private` by default
+2. **Explicit Public Marking**: Only non-sensitive data marked `.public`
+3. **No Content Logging**: Only metadata (char count, byte count, item IDs)
+4. **Truncated UUIDs**: Item IDs show first 8 chars only for correlation
+5. **Debug-Only Logs**: Detailed logs only in debug builds
+
+**What Gets Logged:**
+
+✅ **Safe to log:**
+
+- Lifecycle events (app start, stop)
+- Operation counts (item count, character count)
+- App bundle IDs (not sensitive)
+- Error descriptions (already sanitized by system)
+- Truncated UUIDs (first 8 chars)
+
+❌ **Never logged:**
+
+- Actual clipboard content (text, RTF data)
+- Full item UUIDs
+- Encryption keys
+- User search queries (only length logged)
+- Decrypted data
+
+**Example Secure Logging:**
+
+```swift
+// Before capture
+AppLogger.clipboard.info("Started monitoring (interval: 0.3s)")
+
+// After capture - metadata only
+let itemId = AppLogger.formatItemId(item.id)
+AppLogger.clipboard.debug("Captured text (chars: \(string.count), app: \(bundleID ?? "unknown", privacy: .public))")
+
+// Error handling
+AppLogger.clipboard.error("Failed to save item: \(error.localizedDescription, privacy: .public)")
+```
+
+---
+
 ### Sensitive Content Filtering
 
 **Pattern-Based Detection:**
 
 **1. JWT Tokens:**
+
 ```swift
 if content.hasPrefix("eyJ") && content.count > 50 {
     return true // Likely JWT
@@ -1141,6 +1331,7 @@ if content.hasPrefix("eyJ") && content.count > 50 {
 ```
 
 **2. SSH Private Keys:**
+
 ```swift
 if content.contains("-----BEGIN") &&
    (content.contains("PRIVATE KEY") ||
@@ -1151,6 +1342,7 @@ if content.contains("-----BEGIN") &&
 ```
 
 **3. Long Alphanumeric Tokens:**
+
 ```swift
 // 20-200 chars, >90% alphanumeric
 if trimmed.count >= 20 && trimmed.count <= 200 {
@@ -1162,6 +1354,7 @@ if trimmed.count >= 20 && trimmed.count <= 200 {
 ```
 
 **4. Credit Card Numbers:**
+
 ```swift
 let digits = string.filter { $0.isNumber }
 if digits.count >= 13 && digits.count <= 19 {
@@ -1171,6 +1364,7 @@ if digits.count >= 13 && digits.count <= 19 {
 ```
 
 **5. Password Patterns:**
+
 ```swift
 if lowercased.hasPrefix("password:") ||
    lowercased.hasPrefix("pass:") ||
@@ -1181,6 +1375,7 @@ if lowercased.hasPrefix("password:") ||
 ```
 
 **Limitations:**
+
 - Heuristic-based (not perfect detection)
 - May have false positives/negatives
 - User can disable via settings
@@ -1193,6 +1388,7 @@ if lowercased.hasPrefix("password:") ||
 ### Menu Bar Icon
 
 **Implementation:**
+
 ```swift
 statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 statusItem.button?.image = NSImage(systemSymbolName: "list.clipboard.fill",
@@ -1201,10 +1397,12 @@ statusItem.button?.image?.isTemplate = true // Adapts to menu bar theme
 ```
 
 **Interactions:**
+
 - **Left Click**: `showMenu()` - Display clipboard history
 - **Right Click**: `showContextMenu()` - Settings/Quit
 
 **Button Action:**
+
 ```swift
 button.action = #selector(statusBarButtonClicked)
 button.sendAction(on: [.leftMouseUp, .rightMouseUp])
@@ -1245,6 +1443,7 @@ button.sendAction(on: [.leftMouseUp, .rightMouseUp])
 **Note**: Icons shown as emoji for illustration; actual implementation uses native macOS app icons fetched via `NSWorkspace.shared.icon(forFile:)`
 
 **Context Menu (per item):**
+
 ```
 ┌─────────────────────┐
 │  Copy               │  ← Shows "Copied!" notification
@@ -1265,12 +1464,14 @@ button.sendAction(on: [.leftMouseUp, .rightMouseUp])
 **Purpose**: Provide instant visual feedback for copy/paste actions
 
 **Components:**
+
 1. **NotificationManager**: Singleton coordinator
 2. **NotificationState**: ObservableObject for state management
 3. **CopyNotificationView**: SwiftUI view
 4. **NSPanel**: Overlay display container
 
 **Display Characteristics:**
+
 - **Position**: Center of main screen
 - **Size**: 200x80 (dynamic based on content)
 - **Background**: Black with 85% opacity
@@ -1281,12 +1482,14 @@ button.sendAction(on: [.leftMouseUp, .rightMouseUp])
 - **Duration**: 1.5 seconds before auto-dismiss
 
 **Integration Points:**
+
 - AppDelegate.clipItemSelected() → Copy action
 - AppDelegate.copyItemToPasteboard() → Context menu copy
 - AppDelegate.pasteItem() → Context menu paste
 - ClipboardHistoryView.copyToClipboard() → View All copy
 
 **Performance:**
+
 - Non-blocking (asyncAfter for display)
 - Minimal CPU overhead
 - Click-through (ignoresMouseEvents)
@@ -1375,6 +1578,7 @@ button.sendAction(on: [.leftMouseUp, .rightMouseUp])
 ### 2. Search Algorithm
 
 **Naive Approach** (Current):
+
 ```swift
 func searchItems(query: String) throws -> [ClipItem] {
     let allItems = try fetchAllItems()
@@ -1390,16 +1594,19 @@ func searchItems(query: String) throws -> [ClipItem] {
 ```
 
 **Performance:**
+
 - Time Complexity: O(n·m) where n=items, m=avg content length
 - Space Complexity: O(n)
 - Typical: ~20-50ms for 100 items
 
 **Limitations:**
+
 - Decrypts all items (no index)
 - Searches only plain text content (RTF preview text is searchable)
 - Substring matching only (no fuzzy matching)
 
 **Future Optimization:**
+
 - Full-text search index (encrypted)
 - Fuzzy matching (Levenshtein distance)
 
@@ -1410,6 +1617,7 @@ func searchItems(query: String) throws -> [ClipItem] {
 **Hash Function**: SHA-256
 
 **Implementation:**
+
 ```swift
 static func computeHash(for data: Data) -> String {
     let hash = SHA256.hash(data: data)
@@ -1418,6 +1626,7 @@ static func computeHash(for data: Data) -> String {
 ```
 
 **Deduplication Logic:**
+
 ```swift
 // Before creating new item
 let hash = computeHash(for: content)
@@ -1432,6 +1641,7 @@ if let existingItem = try? fetchItemByHash(hash) {
 ```
 
 **Database Constraint:**
+
 ```xml
 <uniquenessConstraints>
     <uniquenessConstraint>
@@ -1441,6 +1651,7 @@ if let existingItem = try? fetchItemByHash(hash) {
 ```
 
 **Edge Case Handling:**
+
 - Hash collision: Virtually impossible (2^256 space)
 - Same content, different format: RTF and plain text of same content = duplicate (hash based on plain text)
 
@@ -1511,6 +1722,7 @@ if let existingItem = try? fetchItemByHash(hash) {
 ```
 
 **Timing Considerations:**
+
 - 50ms delay: Ensures pasteboard propagation
 - Too short: Paste may fail (stale pasteboard)
 - Too long: Noticeable lag
@@ -1589,6 +1801,7 @@ if let existingItem = try? fetchItemByHash(hash) {
 ### Xcode Project Setup
 
 **Targets:**
+
 1. **ClipVault** (macOS App)
    - Deployment Target: macOS 12.0
    - Bundle ID: `com.clipvault.ClipVault` (adjust as needed)
@@ -1607,6 +1820,7 @@ if let existingItem = try? fetchItemByHash(hash) {
 ### Entitlements
 
 **ClipVault/ClipVault.entitlements:**
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -1628,6 +1842,7 @@ if let existingItem = try? fetchItemByHash(hash) {
 ### Info.plist Configuration
 
 **ClipVault/Info.plist:**
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -1653,6 +1868,7 @@ if let existingItem = try? fetchItemByHash(hash) {
 ### Required Permissions
 
 **Accessibility Access** (for auto-paste functionality):
+
 - Navigate: System Settings → Privacy & Security → Accessibility
 - Add ClipVault and toggle ON
 - Required only if auto-paste on select is enabled
@@ -1666,6 +1882,7 @@ if let existingItem = try? fetchItemByHash(hash) {
 
 **Future Model Changes:**
 If adding attributes/entities:
+
 1. Editor → Add Model Version (in .xcdatamodeld)
 2. Set new version as current
 3. Core Data handles migration automatically for simple changes
@@ -1680,6 +1897,7 @@ Require custom migration mapping models.
 ### Manual Testing Checklist
 
 **Clipboard Capture:**
+
 - [ ] Plain text capture works
 - [ ] RTF capture works (copy from TextEdit with formatting)
 - [ ] RTF has priority over plain text
@@ -1688,6 +1906,7 @@ Require custom migration mapping models.
 - [ ] RTF content shows formatting icon indicator
 
 **Exclusions:**
+
 - [ ] Content filter blocks JWT tokens (test: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`)
 - [ ] Content filter blocks SSH keys
 - [ ] Content filter blocks long alphanumeric strings
@@ -1696,6 +1915,7 @@ Require custom migration mapping models.
 - [ ] Custom app exclusion works via browse button
 
 **Search:**
+
 - [ ] Search updates on each keystroke
 - [ ] Search finds text content (case-insensitive)
 - [ ] Search finds RTF plain text content
@@ -1703,6 +1923,7 @@ Require custom migration mapping models.
 - [ ] Search field maintains focus during typing
 
 **Menu Interactions:**
+
 - [ ] Left click opens menu
 - [ ] Right click opens context menu
 - [ ] Click item copies to clipboard (auto-paste OFF)
@@ -1713,6 +1934,7 @@ Require custom migration mapping models.
 - [ ] Context menu "Delete" removes item
 
 **Visual Notifications:**
+
 - [ ] "Copied!" notification appears when copying
 - [ ] "Pasted!" notification appears when pasting
 - [ ] Notification appears in center of screen
@@ -1722,12 +1944,14 @@ Require custom migration mapping models.
 - [ ] Multiple rapid copies update notification smoothly
 
 **Pinning:**
+
 - [ ] Pin moves item to PINNED section
 - [ ] Pinned items appear at top with 📌 header
 - [ ] Pinned items survive Clear All
 - [ ] Unpin returns item to RECENT section
 
 **Settings:**
+
 - [ ] Settings window opens (550x500)
 - [ ] General tab: Max items dropdown works (50-500)
 - [ ] General tab: RTF capture toggle works
@@ -1742,6 +1966,7 @@ Require custom migration mapping models.
 - [ ] About tab: GitHub link opens in browser
 
 **View All Window:**
+
 - [ ] Opens with "View All..." menu item
 - [ ] Table shows Preview, Time, App, Actions columns
 - [ ] RTF indicator icon shows for RTF items
@@ -1755,11 +1980,13 @@ Require custom migration mapping models.
 - [ ] Results count displays correctly
 
 **Encryption:**
+
 - [ ] Clipboard items encrypted in Core Data (inspect .sqlite file)
 - [ ] Decryption works on load
 - [ ] Encryption key persists in Keychain
 
 **Performance:**
+
 - [ ] App launches quickly (<1s)
 - [ ] Search responsive (<100ms)
 - [ ] Notifications appear instantly (<50ms)
@@ -1773,6 +2000,7 @@ Require custom migration mapping models.
 **Test Targets:**
 
 **EncryptionManager:**
+
 ```swift
 func testEncryptDecryptString() {
     let original = "Hello, World!"
@@ -1790,6 +2018,7 @@ func testEncryptDecryptData() {
 ```
 
 **ExclusionManager:**
+
 ```swift
 func testJWTDetection() {
     let jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ"
@@ -1803,6 +2032,7 @@ func testSSHKeyDetection() {
 ```
 
 **ClipItemManager:**
+
 ```swift
 func testSaveAndFetch() throws {
     let content = ClipContent.text("Test clipboard item")
@@ -1826,6 +2056,7 @@ func testDeduplication() throws {
 ```
 
 **NotificationManager:**
+
 ```swift
 func testNotificationDisplay() {
     let expectation = XCTestExpectation(description: "Notification displayed")
@@ -1848,28 +2079,34 @@ func testNotificationDisplay() {
 ### Current Limitations
 
 1. **Search Cannot Index Encrypted Content**
+
    - Requires decrypting all items on each search
    - Performance degrades with >500 items
    - Searches only plain text content
 
 2. **No iCloud Sync**
+
    - Clipboard history local to device
    - Users with multiple Macs have separate histories
 
 3. **No Drag-and-Drop**
+
    - Cannot drag items from menu to other apps
    - Menu-based interaction only
 
 4. **Limited Content Type Support**
+
    - Only text and RTF supported
    - No image or file URL capture
    - No HTML clipboard support
 
 5. **Menu Bar Only**
+
    - No windowed interface option (though View All provides browsing)
    - Accessibility concerns for screen readers
 
 6. **Single Device Encryption Key**
+
    - Key stored in Keychain (device-bound)
    - Restoring from Time Machine backup loses key
    - No key export/import mechanism
@@ -1893,6 +2130,7 @@ func testNotificationDisplay() {
 ### Planned Features
 
 **Phase 1 (Short-term):**
+
 - [ ] Drag-and-drop support in menu
 - [ ] Export/import clipboard history
 - [ ] View All window enhancements (sorting, bulk actions)
@@ -1901,6 +2139,7 @@ func testNotificationDisplay() {
 - [ ] Notification sound effects (optional)
 
 **Phase 2 (Mid-term):**
+
 - [ ] Global keyboard shortcuts for quick access and paste last item
 - [ ] Image capture with thumbnail previews (content type expansion)
 - [ ] File URL capture with "Reveal in Finder" (content type expansion)
@@ -1911,6 +2150,7 @@ func testNotificationDisplay() {
 - [ ] AppleScript/JavaScript automation support
 
 **Phase 3 (Long-term):**
+
 - [ ] CLI tool for terminal access
 - [ ] Browser extension (Chrome, Safari)
 - [ ] Team sharing features (workspace)
@@ -1923,6 +2163,7 @@ func testNotificationDisplay() {
 ### Performance Optimizations
 
 **Search Optimization:**
+
 ```swift
 // Current: O(n·m) decryption on every search
 // Future: Maintain in-memory cache of decrypted previews
@@ -1950,16 +2191,19 @@ func searchItems(query: String) throws -> [ClipItem] {
 ```
 
 **Menu Rendering Optimization:**
+
 - Virtual scrolling for >100 items
 - Lazy loading of menu items
 - Async icon fetching
 
 **Notification Optimization:**
+
 - Panel pooling (reuse existing panel)
 - Async positioning calculations
 - Reduced animation overhead
 
 **Database Optimization:**
+
 - Add compound index: `(isPinned, dateAdded)`
 - Periodic VACUUM to reclaim space
 - Consider WAL mode for concurrency
@@ -1969,6 +2213,7 @@ func searchItems(query: String) throws -> [ClipItem] {
 ### Architectural Improvements
 
 **1. Modular Architecture:**
+
 ```
 ClipVaultCore (Framework)
 ├── Encryption
@@ -2024,16 +2269,19 @@ enum ClipVaultError: LocalizedError {
 ### Development Commands
 
 **Build:**
+
 ```bash
 xcodebuild -project ClipVault.xcodeproj -scheme ClipVault -configuration Debug build
 ```
 
 **Run:**
+
 ```bash
 open /Users/edd/Library/Developer/Xcode/DerivedData/.../Build/Products/Debug/ClipVault.app
 ```
 
 **Clean:**
+
 ```bash
 xcodebuild clean -project ClipVault.xcodeproj -scheme ClipVault
 ```
@@ -2042,31 +2290,70 @@ xcodebuild clean -project ClipVault.xcodeproj -scheme ClipVault
 
 ### Debugging Tips
 
+**View Application Logs:**
+
+ClipVault uses Apple's unified logging system. View logs in real-time or historically:
+
+```bash
+# Stream logs in real-time
+log stream --predicate 'subsystem == "com.clipvault"'
+
+# View last hour of logs
+log show --predicate 'subsystem == "com.clipvault"' --last 1h
+
+# View only errors
+log show --predicate 'subsystem == "com.clipvault" AND messageType == error' --last 24h
+
+# View clipboard operations only
+log show --predicate 'subsystem == "com.clipvault" AND category == "clipboard"' --last 1h
+
+# Enable debug logs (requires sudo, resets on reboot)
+sudo log config --mode "level:debug" --subsystem com.clipvault
+log stream --predicate 'subsystem == "com.clipvault"' --level debug
+```
+
+Or use **Console.app**:
+
+1. Open Console.app
+2. Filter with: `subsystem == "com.clipvault"`
+3. Select specific categories: `category == "clipboard"`
+
 **Enable Core Data SQL Logging:**
+
 ```
 Edit Scheme → Run → Arguments → Add:
 -com.apple.CoreData.SQLDebug 3
 ```
 
 **Monitor Clipboard Changes:**
+
+Add temporary debug logging:
+
 ```swift
-print("Pasteboard changeCount: \(NSPasteboard.general.changeCount)")
+AppLogger.clipboard.debug("Pasteboard changeCount: \(NSPasteboard.general.changeCount)")
 ```
 
 **Inspect Keychain:**
+
 ```bash
 security find-generic-password -a "com.clipvault.encryption.key"
 ```
 
 **Check Accessibility Permissions:**
+
+Add temporary debug logging:
+
 ```swift
 let trusted = AXIsProcessTrusted()
-print("Accessibility trusted: \(trusted)")
+AppLogger.clipboard.debug("Accessibility trusted: \(trusted)")
 ```
 
 **Monitor Notification Display:**
-```swift
-print("Notification panel visible: \(notificationPanel?.isVisible ?? false)")
+
+Check notification logs:
+
+```bash
+log stream --predicate 'subsystem == "com.clipvault" AND category == "ui"' | grep -i notification
 ```
 
 ---
@@ -2078,10 +2365,14 @@ print("Notification panel visible: \(notificationPanel?.isVisible ?? false)")
 - [Keychain Services](https://developer.apple.com/documentation/security/keychain_services)
 - [AppKit NSStatusItem](https://developer.apple.com/documentation/appkit/nsstatusitem)
 - [Accessibility API](https://developer.apple.com/documentation/applicationservices/accessibility)
+- [OSLog & Unified Logging](https://developer.apple.com/documentation/os/logging)
+- [Generating Log Messages from Your Code](https://developer.apple.com/documentation/os/logging/generating_log_messages_from_your_code)
 - [GitHub Project](https://github.com/eddmann/ClipVault)
 
 ---
 
 **Document Revision History:**
+
+- v1.2 (2025-10-10): Added AppLogger infrastructure and unified logging system documentation
 - v1.1 (2025-10-09): Updated to reflect actual implementation including NotificationManager system
 - v1.0 (2025-10-09): Initial comprehensive documentation
