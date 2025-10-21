@@ -31,7 +31,7 @@ struct SettingsView: View {
                 }
         }
         .padding(.top, 12)
-        .frame(width: 550, height: 500)
+        .frame(width: 550, height: 560)
     }
 }
 
@@ -102,7 +102,7 @@ struct GeneralSettingsView: View {
                         .font(.headline)
                         .foregroundColor(.primary)
 
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 16) {
                         HStack(alignment: .top, spacing: 12) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Auto-paste on Select")
@@ -115,6 +115,24 @@ struct GeneralSettingsView: View {
                             Spacer()
 
                             Toggle("", isOn: $viewModel.autoPasteOnSelect)
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                        }
+
+                        Divider()
+
+                        HStack(alignment: .top, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Launch at Login")
+                                    .font(.subheadline)
+                                Text("Automatically start ClipVault when you log in")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            Toggle("", isOn: $viewModel.launchAtLogin)
                                 .labelsHidden()
                                 .toggleStyle(.switch)
                         }
@@ -408,6 +426,14 @@ class SettingsViewModel: ObservableObject {
         didSet { settings.autoPasteOnSelect = autoPasteOnSelect }
     }
 
+    @Published var launchAtLogin: Bool {
+        didSet {
+            if launchAtLogin != LaunchAtLoginManager.shared.isEnabled {
+                LaunchAtLoginManager.shared.toggle()
+            }
+        }
+    }
+
     @Published var contentFilterEnabled: Bool {
         didSet { settings.contentFilterEnabled = contentFilterEnabled }
     }
@@ -420,6 +446,7 @@ class SettingsViewModel: ObservableObject {
         self.maxHistoryItems = settings.maxHistoryItems
         self.captureRTF = settings.captureRTF
         self.autoPasteOnSelect = settings.autoPasteOnSelect
+        self.launchAtLogin = LaunchAtLoginManager.shared.isEnabled
         self.contentFilterEnabled = settings.contentFilterEnabled
         self.excludedAppBundleIDs = settings.excludedAppBundleIDs
     }

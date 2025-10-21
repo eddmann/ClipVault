@@ -21,6 +21,7 @@ class SettingsManager {
         static let autoPasteOnSelect = "autoPasteOnSelect"
         static let excludedAppBundleIDs = "excludedAppBundleIDs"
         static let contentFilterEnabled = "contentFilterEnabled"
+        static let launchAtLogin = "launchAtLogin"
     }
 
     private init() {
@@ -35,7 +36,8 @@ class SettingsManager {
             Keys.captureRTF: true,
             Keys.autoPasteOnSelect: false,
             Keys.excludedAppBundleIDs: [],
-            Keys.contentFilterEnabled: true
+            Keys.contentFilterEnabled: true,
+            Keys.launchAtLogin: false
         ])
     }
 
@@ -59,6 +61,11 @@ class SettingsManager {
     var autoPasteOnSelect: Bool {
         get { defaults.bool(forKey: Keys.autoPasteOnSelect) }
         set { defaults.set(newValue, forKey: Keys.autoPasteOnSelect) }
+    }
+
+    var launchAtLogin: Bool {
+        get { defaults.bool(forKey: Keys.launchAtLogin) }
+        set { defaults.set(newValue, forKey: Keys.launchAtLogin) }
     }
 
     // MARK: - Privacy Settings
@@ -96,5 +103,6 @@ class SettingsManager {
         autoPasteOnSelect = false
         excludedAppBundleIDs = []
         contentFilterEnabled = true
+        launchAtLogin = false
     }
 }
