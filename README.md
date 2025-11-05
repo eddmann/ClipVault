@@ -1,6 +1,6 @@
-<img src="site/logo.png" width="200">
-
 # ClipVault
+
+![ClipVault](docs/heading.png)
 
 A secure, privacy-focused clipboard manager for macOS with AES-256-GCM encryption.
 
