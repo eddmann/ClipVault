@@ -19,13 +19,9 @@ A secure, privacy-focused clipboard manager for macOS with AES-256-GCM encryptio
 
 1. Download the latest release
 2. Move `ClipVault.app` to Applications
-3. **Right-click** and select **"Open"** (required for unsigned apps)
+3. Double-click to open
 
-If you see "ClipVault is damaged", run:
-
-```bash
-xattr -cr /Applications/ClipVault.app
-```
+This app is **signed and notarized** by Apple.
 
 ## Usage
 

@@ -285,6 +285,27 @@ Root/
 └── ClipVault.xcodeproj       # Xcode project
 ```
 
+## GitHub Release Process
+
+Releases are created via the GitHub Actions workflow in `.github/workflows/release.yml`. The workflow is triggered manually via `workflow_dispatch` and requires a version number input.
+
+**What the workflow does:**
+
+1. Updates version in `project.pbxproj`
+2. Installs Apple Developer ID certificate from secrets
+3. Builds universal binary (Intel + Apple Silicon)
+4. Signs with Developer ID and hardened runtime
+5. Submits to Apple for notarization
+6. Staples notarization ticket to the app
+7. Creates ZIP and GitHub release with release notes
+
+**To create a release:**
+
+1. Go to Actions → Release ClipVault
+2. Click "Run workflow"
+3. Enter version number (e.g., `1.0.0`)
+4. The workflow creates a signed, notarized release
+
 ## Settings Storage
 
 Managed by `SettingsManager` wrapping UserDefaults:

@@ -34,7 +34,34 @@ jobs:
 
           echo "Updated version to ${{ inputs.version }} (build $BUILD_NUMBER)"
 
+      - name: Install Apple certificate
+        env:
+          APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+
+          echo "$APPLE_CERTIFICATE_BASE64" | base64 --decode > $RUNNER_TEMP/certificate.p12
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          security import $RUNNER_TEMP/certificate.p12 \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -A -t cert -f pkcs12 \
+            -k $KEYCHAIN_PATH
+
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          rm -f $RUNNER_TEMP/certificate.p12
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+
       - name: Build app
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           xcodebuild clean build \
             -project ClipVault.xcodeproj \
@@ -42,13 +69,73 @@ jobs:
             -configuration Release \
             -derivedDataPath ./build \
             -arch x86_64 -arch arm64 \
-            CODE_SIGN_IDENTITY="-" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Developer ID Application" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
+            OTHER_CODE_SIGN_FLAGS="--timestamp --options runtime"
+
+      - name: Verify code signature
+        run: |
+          APP_PATH="build/Build/Products/Release/ClipVault.app"
+          echo "Verifying code signature..."
+          codesign -vvv --deep --strict "$APP_PATH"
+          echo "Checking signature details..."
+          codesign -dvv "$APP_PATH"
+          echo "Checking entitlements..."
+          codesign -d --entitlements - "$APP_PATH"
+
+      - name: Notarize app
+        env:
+          APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          APP_PATH="build/Build/Products/Release/ClipVault.app"
+
+          echo "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode > $RUNNER_TEMP/AuthKey.p8
+
+          /usr/bin/ditto -c -k --keepParent "$APP_PATH" "$RUNNER_TEMP/ClipVault-notarize.zip"
+
+          echo "Submitting for notarization..."
+          SUBMIT_OUTPUT=$(xcrun notarytool submit "$RUNNER_TEMP/ClipVault-notarize.zip" \
+            --key "$RUNNER_TEMP/AuthKey.p8" \
+            --key-id "$APP_STORE_CONNECT_KEY_ID" \
+            --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
+            --wait 2>&1)
+
+          echo "$SUBMIT_OUTPUT"
+
+          # Extract submission ID
+          SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | grep "id:" | head -1 | awk '{print $2}')
+
+          # Check if notarization succeeded
+          if echo "$SUBMIT_OUTPUT" | grep -q "status: Accepted"; then
+            echo "Notarization succeeded!"
+          else
+            echo "Notarization failed. Fetching detailed log..."
+            xcrun notarytool log "$SUBMISSION_ID" \
+              --key "$RUNNER_TEMP/AuthKey.p8" \
+              --key-id "$APP_STORE_CONNECT_KEY_ID" \
+              --issuer "$APP_STORE_CONNECT_ISSUER_ID"
+            rm -f $RUNNER_TEMP/AuthKey.p8 $RUNNER_TEMP/ClipVault-notarize.zip
+            exit 1
+          fi
+
+          echo "Stapling notarization ticket..."
+          xcrun stapler staple "$APP_PATH"
+
+          echo "Verifying..."
+          spctl -a -t exec -vv "$APP_PATH"
+          xcrun stapler validate "$APP_PATH"
+
+          rm -f $RUNNER_TEMP/AuthKey.p8 $RUNNER_TEMP/ClipVault-notarize.zip
 
       - name: Create app bundle ZIP
         run: |
           cd build/Build/Products/Release
+          xattr -cr ClipVault.app
+          find ClipVault.app -name '._*' -delete
           zip -r ../../../../ClipVault-${{ inputs.version }}.zip ClipVault.app
           cd ../../../..
           echo "Created ClipVault-${{ inputs.version }}.zip"
@@ -64,12 +151,9 @@ jobs:
           1. Download `ClipVault-${{ inputs.version }}.zip`
           2. Unzip the file
           3. Move `ClipVault.app` to your Applications folder
-          4. Right-click and select "Open" the first time (to bypass Gatekeeper)
+          4. Double-click to open
 
-          If you see "ClipVault is damaged and can't be opened", run:
-          ```bash
-          xattr -cr /Applications/ClipVault.app
-          ```
+          This release is **signed and notarized** by Apple.
 
           ### Features
 
@@ -88,8 +172,6 @@ jobs:
           - Universal Binary (Intel + Apple Silicon)
 
           ### Notes
-
-          ⚠️ **Unsigned Build**: This build is not notarized or signed with a Developer ID. You'll need to right-click and select "Open" the first time you run it.
 
           For auto-paste functionality, grant Accessibility permissions when prompted in System Settings → Privacy & Security → Accessibility.
 
@@ -121,3 +203,10 @@ jobs:
           name: ClipVault-${{ inputs.version }}
           path: ClipVault-${{ inputs.version }}.zip
           retention-days: 90
+
+      - name: Cleanup keychain
+        if: always()
+        run: |
+          if [[ -f "${KEYCHAIN_PATH:-}" ]]; then
+            security delete-keychain $KEYCHAIN_PATH || true
+          fi
