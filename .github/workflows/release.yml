@@ -131,78 +131,53 @@ jobs:
 
           rm -f $RUNNER_TEMP/AuthKey.p8 $RUNNER_TEMP/ClipVault-notarize.zip
 
-      - name: Create app bundle ZIP
+      - name: Create ZIP
         run: |
           cd build/Build/Products/Release
           xattr -cr ClipVault.app
           find ClipVault.app -name '._*' -delete
           zip -r ../../../../ClipVault-${{ inputs.version }}.zip ClipVault.app
-          cd ../../../..
-          echo "Created ClipVault-${{ inputs.version }}.zip"
-
-      - name: Generate release notes
-        id: release_notes
-        run: |
-          cat > release_notes.md << 'EOF'
-          ## ClipVault v${{ inputs.version }}
-
-          ### Installation
-
-          1. Download `ClipVault-${{ inputs.version }}.zip`
-          2. Unzip the file
-          3. Move `ClipVault.app` to your Applications folder
-          4. Double-click to open
-
-          This release is **signed and notarized** by Apple.
-
-          ### Features
-
-          - **Automatic clipboard monitoring** - Captures all clipboard changes in real-time
-          - **AES-256-GCM encryption** - All content encrypted at rest with keys in macOS Keychain
-          - **Smart content filtering** - Auto-detects and excludes passwords, API keys, SSH keys, credit cards
-          - **Rich text support** - Preserves bold, italic, colors, and formatting
-          - **Source app tracking** - See which app each item came from with native icons
-          - **Pin important items** - Keep frequently used snippets at the top
-          - **Real-time search** - Instantly filter clipboard history
-          - **Auto-paste** - One-click paste without keyboard commands
-
-          ### Requirements
-
-          - macOS 12.0 (Monterey) or later
-          - Universal Binary (Intel + Apple Silicon)
-
-          ### Notes
-
-          For auto-paste functionality, grant Accessibility permissions when prompted in System Settings → Privacy & Security → Accessibility.
-
-          ### Security & Privacy
-
-          - All clipboard content is encrypted at rest using AES-256-GCM
-          - Encryption keys stored securely in macOS Keychain
-          - No network transmission - all data stays local
-          - Zero telemetry or analytics collection
-          EOF
-
-          echo "Generated release notes"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ inputs.version }}
           name: ClipVault v${{ inputs.version }}
-          body_path: release_notes.md
+          body: |
+            ## ClipVault v${{ inputs.version }}
+
+            ### Installation
+
+            1. Download `ClipVault-${{ inputs.version }}.zip`
+            2. Unzip and move `ClipVault.app` to Applications
+            3. Double-click to open
+
+            This release is **signed and notarized** by Apple.
+
+            ### Features
+
+            - **Automatic clipboard monitoring** - Captures all clipboard changes in real-time
+            - **AES-256-GCM encryption** - All content encrypted at rest with keys in macOS Keychain
+            - **Smart content filtering** - Auto-detects and excludes passwords, API keys, SSH keys, credit cards
+            - **Rich text support** - Preserves bold, italic, colors, and formatting
+            - **Source app tracking** - See which app each item came from with native icons
+            - **Pin important items** - Keep frequently used snippets at the top
+            - **Real-time search** - Instantly filter clipboard history
+            - **Auto-paste** - One-click paste without keyboard commands
+
+            ### Requirements
+
+            - macOS 12.0 (Monterey) or later
+            - Universal Binary (Intel + Apple Silicon)
+
+            ### Notes
+
+            For auto-paste functionality, grant Accessibility permissions when prompted in System Settings → Privacy & Security → Accessibility.
           files: ClipVault-${{ inputs.version }}.zip
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ClipVault-${{ inputs.version }}
-          path: ClipVault-${{ inputs.version }}.zip
-          retention-days: 90
 
       - name: Cleanup keychain
         if: always()
