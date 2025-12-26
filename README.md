@@ -17,11 +17,19 @@ A secure, privacy-focused clipboard manager for macOS with AES-256-GCM encryptio
 
 ## Installation
 
-1. Download the latest release
+### Homebrew (Recommended)
+
+```bash
+brew install eddmann/tap/clipvault
+```
+
+### Manual Download
+
+1. Download the latest release from [GitHub Releases](https://github.com/eddmann/ClipVault/releases)
 2. Move `ClipVault.app` to Applications
 3. Double-click to open
 
-This app is **signed and notarized** by Apple.
+The app is **signed and notarized** by Apple.
 
 ## Usage
 
