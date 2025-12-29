@@ -300,8 +300,7 @@
 <body class="font-sans text-gray-800 dark:text-gray-100 antialiased">
 
     <!-- Theme Toggle Button -->
-    <button id="theme-toggle" onclick="toggleTheme()"
-        class="fixed top-6 right-6 z-50 p-3 rounded-2xl bg-white/70 dark:bg-slate-800/70 backdrop-blur-lg border border-gray-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300"
+    <button class="js-theme-toggle fixed top-6 right-6 z-50 p-3 rounded-2xl bg-white/70 dark:bg-slate-800/70 backdrop-blur-lg border border-gray-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300"
         aria-label="Toggle dark mode">
         <!-- Sun icon (visible in dark mode) -->
         <svg class="w-5 h-5 text-gray-600 dark:text-gray-300 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -612,12 +611,12 @@
 
         setTheme(getThemePreference());
 
-        window.toggleTheme = function() {
+        document.querySelector('.js-theme-toggle').addEventListener('click', () => {
             const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
             const next = current === 'dark' ? 'light' : 'dark';
             localStorage.setItem(STORAGE_KEY, next);
             setTheme(next);
-        };
+        });
 
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
             if (!localStorage.getItem(STORAGE_KEY)) {
