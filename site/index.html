@@ -1,749 +1,540 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Primary Meta Tags -->
-    <title>
-      ClipVault - Secure Clipboard Manager for macOS | Encrypted History
-    </title>
-    <meta
-      name="title"
-      content="ClipVault - Secure Clipboard Manager for macOS | Encrypted History"
-    />
-    <meta
-      name="description"
-      content="ClipVault is a secure, privacy-focused clipboard manager for macOS. Automatically captures clipboard history with AES-256 encryption, smart filtering, and instant search. Free and open source."
-    />
-    <meta
-      name="keywords"
-      content="ClipVault, clipboard manager, macOS, secure clipboard, encrypted clipboard, clipboard history, privacy, AES-256, menu bar app, clipboard encryption"
-    />
-    <meta name="robots" content="index, follow" />
-    <meta name="author" content="Edd Mann" />
-    <meta name="theme-color" content="#3b82f6" />
+    <title>ClipVault - Secure Clipboard Manager for macOS | Encrypted History</title>
+    <meta name="title" content="ClipVault - Secure Clipboard Manager for macOS | Encrypted History">
+    <meta name="description" content="Never lose clipboard history again. ClipVault is a secure, privacy-focused clipboard manager for macOS with AES-256-GCM encryption, smart filtering, and instant search. Free and open source.">
+    <meta name="keywords" content="ClipVault, clipboard manager, macOS, secure clipboard, encrypted clipboard, clipboard history, privacy, AES-256, menu bar app, clipboard encryption">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Edd Mann">
+    <meta name="theme-color" content="#3b82f6">
 
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://eddmann.com/ClipVault/" />
+    <link rel="canonical" href="https://eddmann.com/ClipVault/">
 
     <!-- Favicons -->
-    <link rel="icon" type="image/png" href="logo.png" />
-    <link rel="apple-touch-icon" href="logo.png" />
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
 
     <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://eddmann.com/ClipVault/" />
-    <meta property="og:title" content="ClipVault - Secure Clipboard Manager for macOS" />
-    <meta
-      property="og:description"
-      content="Free macOS clipboard manager with AES-256-GCM encryption. Never lose clipboard history again, with smart filtering and instant search."
-    />
-    <meta
-      property="og:image"
-      content="https://eddmann.com/ClipVault/demo.png"
-    />
-    <meta property="og:site_name" content="ClipVault" />
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://eddmann.com/ClipVault/">
+    <meta property="og:title" content="ClipVault - Secure Clipboard Manager for macOS">
+    <meta property="og:description" content="Free macOS clipboard manager with AES-256-GCM encryption. Never lose clipboard history again, with smart filtering and instant search.">
+    <meta property="og:image" content="https://eddmann.com/ClipVault/preview.png">
+    <meta property="og:site_name" content="ClipVault">
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://eddmann.com/ClipVault/" />
-    <meta
-      property="twitter:title"
-      content="ClipVault - Secure Clipboard Manager for macOS"
-    />
-    <meta
-      property="twitter:description"
-      content="Free macOS clipboard manager with AES-256-GCM encryption. Never lose clipboard history again."
-    />
-    <meta
-      property="twitter:image"
-      content="https://eddmann.com/ClipVault/demo.png"
-    />
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://eddmann.com/ClipVault/">
+    <meta property="twitter:title" content="ClipVault - Secure Clipboard Manager for macOS">
+    <meta property="twitter:description" content="Free macOS clipboard manager with AES-256-GCM encryption. Never lose clipboard history again.">
+    <meta property="twitter:image" content="https://eddmann.com/ClipVault/preview.png">
 
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
-      {
+    {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "ClipVault",
         "operatingSystem": "macOS 12.0 or later",
         "applicationCategory": "UtilitiesApplication",
         "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
         },
         "description": "A secure, privacy-focused clipboard manager for macOS with AES-256-GCM encryption, smart filtering, and instant search capabilities.",
         "downloadUrl": "https://github.com/eddmann/ClipVault/releases",
         "softwareVersion": "1.0.0",
         "author": {
-          "@type": "Person",
-          "name": "Edd Mann"
+            "@type": "Person",
+            "name": "Edd Mann"
         },
         "image": "https://eddmann.com/ClipVault/logo.png",
-        "screenshot": "https://eddmann.com/ClipVault/demo.png"
-      }
+        "screenshot": "https://eddmann.com/ClipVault/preview.png"
+    }
     </script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- DM Sans - Distinctive, modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'SF Mono', 'monospace'],
+                    },
+                    colors: {
+                        surface: '#fafafa',
+                    },
+                    borderRadius: {
+                        '2xl': '16px',
+                        '3xl': '24px',
+                    },
+                },
+            },
+        }
+    </script>
+
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      :root {
-        --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-        --secondary-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-        --accent-gradient: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-        --dark: #1d1d1f;
-        --light: #f5f5f7;
-        --gray: #86868b;
-        --card-bg: rgba(255, 255, 255, 0.95);
-        --shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-        --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.15);
-      }
-
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
-          'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        background: var(--light);
-        color: var(--dark);
-        line-height: 1.6;
-        overflow-x: hidden;
-      }
-
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-      }
-
-      /* Header */
-      header {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-      }
-
-      nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px 0;
-      }
-
-      .logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-block: 14px;
-        font-size: 24px;
-        font-weight: 600;
-        color: var(--dark);
-        text-decoration: none;
-      }
-
-      .logo-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        object-fit: cover;
-      }
-
-      .download-btn {
-        background: var(--primary-gradient);
-        color: white;
-        padding: 12px 30px;
-        margin-block: 14px;
-        border-radius: 25px;
-        text-decoration: none;
-        font-weight: 500;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-      }
-
-      .download-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-      }
-
-      /* Hero Section */
-      .hero {
-        padding: 150px 0 100px;
-        text-align: center;
-        background: linear-gradient(180deg, #f5f5f7 0%, #ffffff 100%);
-      }
-
-      .hero-icon {
-        width: 180px;
-        height: 180px;
-        margin: 0 auto 30px;
-        animation: float 3s ease-in-out infinite;
-        filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.15));
-      }
-
-      @keyframes float {
-        0%,
-        100% {
-          transform: translateY(0px);
+        body {
+            background-color: #fafafa;
         }
-        50% {
-          transform: translateY(-10px);
+
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-      }
 
-      h1 {
-        font-size: 64px;
-        font-weight: 700;
-        margin-bottom: 20px;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        line-height: 1.1;
-      }
-
-      .subtitle {
-        font-size: 28px;
-        color: var(--gray);
-        margin-bottom: 40px;
-        font-weight: 400;
-      }
-
-      .hero-buttons {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-
-      .primary-btn {
-        background: var(--primary-gradient);
-        color: white;
-        padding: 18px 40px;
-        border-radius: 30px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 18px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: var(--shadow);
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .primary-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: var(--shadow-lg);
-      }
-
-      .version {
-        color: var(--gray);
-        font-size: 14px;
-      }
-
-      /* Security Badge */
-      .security-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(16, 185, 129, 0.1);
-        color: #059669;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: 600;
-        margin-top: 20px;
-      }
-
-      /* Features Section */
-      .features {
-        padding: 100px 0;
-        background: white;
-      }
-
-      .section-title {
-        text-align: center;
-        font-size: 48px;
-        font-weight: 700;
-        margin-bottom: 60px;
-        color: var(--dark);
-      }
-
-      .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 30px;
-        margin-top: 60px;
-      }
-
-      .feature-card {
-        background: var(--card-bg);
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: var(--shadow);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-      }
-
-      .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-lg);
-      }
-
-      .feature-icon {
-        font-size: 48px;
-        margin-bottom: 20px;
-        display: block;
-      }
-
-      .feature-title {
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 15px;
-        color: var(--dark);
-      }
-
-      .feature-description {
-        color: var(--gray);
-        font-size: 16px;
-        line-height: 1.6;
-      }
-
-      /* How It Works */
-      .how-it-works {
-        padding: 100px 0;
-        background: linear-gradient(180deg, #ffffff 0%, #f5f5f7 100%);
-      }
-
-      .steps {
-        display: flex;
-        justify-content: space-around;
-        margin-top: 60px;
-        flex-wrap: wrap;
-        gap: 40px;
-      }
-
-      .step {
-        text-align: center;
-        max-width: 300px;
-      }
-
-      .step-number {
-        width: 60px;
-        height: 60px;
-        background: var(--primary-gradient);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        font-weight: 700;
-        margin: 0 auto 20px;
-        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
-      }
-
-      .step-title {
-        font-size: 22px;
-        font-weight: 600;
-        margin-bottom: 10px;
-      }
-
-      .step-description {
-        color: var(--gray);
-        font-size: 16px;
-      }
-
-      /* CTA Section */
-      .cta {
-        padding: 100px 0;
-        background: var(--primary-gradient);
-        color: white;
-        text-align: center;
-      }
-
-      .cta h2 {
-        font-size: 48px;
-        font-weight: 700;
-        margin-bottom: 20px;
-      }
-
-      .cta p {
-        font-size: 24px;
-        margin-bottom: 40px;
-        opacity: 0.9;
-      }
-
-      .cta-btn {
-        background: white;
-        color: #3b82f6;
-        padding: 18px 40px;
-        border-radius: 30px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 18px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        display: inline-block;
-      }
-
-      .cta-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-      }
-
-      /* Footer */
-      footer {
-        background: var(--dark);
-        color: white;
-        padding: 40px 0;
-        text-align: center;
-      }
-
-      footer p {
-        color: var(--gray);
-      }
-
-      footer a {
-        color: white;
-        text-decoration: none;
-        margin: 0 15px;
-        transition: opacity 0.3s ease;
-      }
-
-      footer a:hover {
-        opacity: 0.7;
-      }
-
-      /* Animations */
-      .fade-in {
-        opacity: 0;
-        transform: translateY(30px);
-        animation: fadeIn 0.8s ease forwards;
-      }
-
-      @keyframes fadeIn {
-        to {
-          opacity: 1;
-          transform: translateY(0);
+        .gradient-bg {
+            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
         }
-      }
 
-      .fade-in:nth-child(1) {
-        animation-delay: 0.1s;
-      }
-      .fade-in:nth-child(2) {
-        animation-delay: 0.2s;
-      }
-      .fade-in:nth-child(3) {
-        animation-delay: 0.3s;
-      }
-      .fade-in:nth-child(4) {
-        animation-delay: 0.4s;
-      }
-      .fade-in:nth-child(5) {
-        animation-delay: 0.5s;
-      }
-      .fade-in:nth-child(6) {
-        animation-delay: 0.6s;
-      }
+        .gradient-border {
+            position: relative;
+            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            padding: 2px;
+            border-radius: 24px;
+        }
 
-      /* Responsive */
-      @media (max-width: 768px) {
-        h1 {
-          font-size: 42px;
+        .gradient-border-inner {
+            background: #fafafa;
+            border-radius: 22px;
         }
-        .subtitle {
-          font-size: 20px;
-        }
-        .section-title {
-          font-size: 36px;
-        }
-        .hero {
-          padding: 120px 0 60px;
-        }
-        .features,
-        .how-it-works,
-        .cta {
-          padding: 60px 0;
-        }
-        .hero-icon {
-          width: 140px;
-          height: 140px;
-        }
-        .steps {
-          flex-direction: column;
-          align-items: center;
-        }
-        .download-btn {
-          display: none;
-        }
-      }
 
-      /* Demo Preview */
-      .demo-preview {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        padding: 40px;
-        margin: 60px auto;
-        max-width: 800px;
-        box-shadow: var(--shadow-lg);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-      }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow:
+                0 4px 6px -1px rgba(0, 0, 0, 0.05),
+                0 10px 15px -3px rgba(0, 0, 0, 0.05),
+                0 20px 25px -5px rgba(0, 0, 0, 0.03);
+        }
 
-      .demo-image {
-        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        padding: 20px;
-        text-align: center;
-        color: white;
-        min-height: 300px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-      }
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                0 10px 15px -3px rgba(0, 0, 0, 0.08),
+                0 20px 25px -5px rgba(0, 0, 0, 0.06),
+                0 25px 50px -12px rgba(0, 0, 0, 0.08);
+        }
 
-      .demo-image img {
-        width: 100%;
-        max-width: 760px;
-        display: block;
-        margin: 0 auto;
-        border-radius: 10px;
-      }
+        .app-icon-wrapper {
+            filter: drop-shadow(0 24px 48px rgba(59, 130, 246, 0.25));
+        }
+
+        .app-icon {
+            background: linear-gradient(145deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
+            box-shadow:
+                0 25px 50px -12px rgba(99, 102, 241, 0.4),
+                0 12px 24px -8px rgba(59, 130, 246, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.3);
+        }
+
+        .app-icon-placeholder {
+            background: linear-gradient(145deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
+            box-shadow:
+                0 25px 50px -12px rgba(99, 102, 241, 0.4),
+                0 12px 24px -8px rgba(59, 130, 246, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.3);
+        }
+
+        .terminal {
+            background: linear-gradient(180deg, #1e1e1e 0%, #0d0d0d 100%);
+            box-shadow:
+                0 25px 50px -12px rgba(0, 0, 0, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .terminal-dots span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* Hide scrollbar but allow scrolling */
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .security-badge {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.08) 100%);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+        }
+
+        .macos-badge {
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .feature-icon {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.08) 100%);
+        }
+
+        .lock-icon {
+            filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3));
+        }
+
+        .opacity-0-initial { opacity: 0; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-fade-in-up {
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        /* Stagger classes MUST come after animate-fade-in-up */
+        .stagger-1 { animation-delay: 0.1s !important; }
+        .stagger-2 { animation-delay: 0.2s !important; }
+        .stagger-3 { animation-delay: 0.3s !important; }
+        .stagger-4 { animation-delay: 0.4s !important; }
+        .stagger-5 { animation-delay: 0.5s !important; }
+        .stagger-6 { animation-delay: 0.6s !important; }
+
+        /* Decorative security patterns */
+        .security-pattern {
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(99, 102, 241, 0.03) 0%, transparent 50%);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .animate-float,
+            .animate-fade-in,
+            .animate-fade-in-up,
+            [class*="stagger-"] {
+                animation: none !important;
+            }
+            .opacity-0-initial {
+                opacity: 1;
+            }
+            .glass-card:hover {
+                transform: none;
+            }
+        }
     </style>
-  </head>
-  <body>
-    <!-- Header -->
-    <header>
-      <nav class="container">
-        <a href="#" class="logo">
-          <img
-            src="logo.png"
-            alt="ClipVault app icon - secure clipboard manager"
-            class="logo-icon"
-          />
-          <span>ClipVault</span>
-        </a>
-        <a
-          href="https://github.com/eddmann/ClipVault/releases"
-          class="download-btn"
-          target="_blank"
-          >Download Free</a
-        >
-      </nav>
-    </header>
+</head>
+<body class="font-sans text-gray-800 antialiased">
 
     <!-- Hero Section -->
-    <section class="hero">
-      <div class="container">
-        <img
-          src="logo.png"
-          alt="ClipVault app icon - secure encrypted clipboard manager for macOS"
-          class="hero-icon"
-        />
-        <h1>Secure Clipboard Manager</h1>
-        <p class="subtitle">
-          Never lose clipboard history again. Encrypted, private, and powerful.
-        </p>
-        <div class="hero-buttons">
-          <a
-            href="https://github.com/eddmann/ClipVault/releases"
-            class="primary-btn"
-            target="_blank"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M10 14L4 8L5.4 6.6L9 10.2V2H11V10.2L14.6 6.6L16 8L10 14ZM4 18C3.45 18 2.97917 17.8042 2.5875 17.4125C2.19583 17.0208 2 16.55 2 16V13H4V16H16V13H18V16C18 16.55 17.8042 17.0208 17.4125 17.4125C17.0208 17.8042 16.55 18 16 18H4Z"
-                fill="currentColor"
-              />
+    <section class="min-h-screen flex flex-col items-center justify-center px-6 py-20 relative overflow-hidden security-pattern">
+        <!-- Background decoration -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-blue-500/[0.02] to-indigo-500/[0.02] rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <!-- App Icon -->
+            <div class="mb-12 animate-fade-in-up stagger-1">
+                <div class="app-icon-wrapper inline-block animate-float">
+                    <img src="logo.png" alt="ClipVault" class="w-36 h-36 md:w-44 md:h-44 rounded-[28%]">
+                </div>
+            </div>
+
+            <!-- Headline -->
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 animate-fade-in-up stagger-2 tracking-tight">
+                <span class="gradient-text">Secure Clipboard</span><br>
+                <span class="text-gray-900">Manager</span>
+            </h1>
+
+            <!-- Tagline -->
+            <p class="text-xl md:text-2xl text-gray-600 mb-10 max-w-2xl mx-auto animate-fade-in-up stagger-3 leading-relaxed">
+                Never lose clipboard history again.<br class="hidden md:block">
+                <span class="text-gray-800 font-medium">Encrypted, private, and powerful.</span>
+            </p>
+
+            <!-- Badges -->
+            <div class="flex flex-wrap items-center justify-center gap-3 mb-10 animate-fade-in-up stagger-4">
+                <!-- macOS Badge -->
+                <div class="macos-badge px-4 py-2 rounded-full flex items-center gap-2">
+                    <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                    </svg>
+                    <span class="text-sm font-medium text-gray-700">macOS 12.0+</span>
+                </div>
+
+                <!-- Security Badge -->
+                <div class="security-badge px-4 py-2 rounded-full flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    <span class="text-sm font-semibold text-green-700">AES-256-GCM Encrypted</span>
+                </div>
+            </div>
+
+            <!-- Download Button -->
+            <div class="animate-fade-in-up stagger-5">
+                <a href="#installation" class="gradient-bg inline-flex items-center gap-3 text-white font-semibold text-lg px-8 py-4 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/25 hover:-translate-y-1 active:scale-[0.98]">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Download for macOS
+                </a>
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-pulse-slow">
+            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
             </svg>
-            Download for macOS
-          </a>
-          <span class="version">Free • Open Source • macOS 12+</span>
         </div>
-        <div class="security-badge">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2ZM10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z" fill="currentColor"/>
-          </svg>
-          AES-256-GCM Encrypted
-        </div>
-      </div>
     </section>
 
     <!-- Features Section -->
-    <section class="features">
-      <div class="container">
-        <h2 class="section-title">Privacy-First. Powerful. Native.</h2>
+    <section class="py-24 px-6" id="features">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
+                    Privacy-first features
+                </h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Powerful clipboard management with security at its core
+                </p>
+            </div>
 
-        <div class="features-grid">
-          <div class="feature-card fade-in">
-            <span class="feature-icon">🔄</span>
-            <h3 class="feature-title">Automatic Clipboard Monitoring</h3>
-            <p class="feature-description">
-              Captures all clipboard changes in real-time. Works silently in the background with one-click paste support.
-            </p>
-          </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Feature 1: Automatic Monitoring -->
+                <div class="glass-card rounded-3xl p-8 transition-all duration-300 opacity-0-initial stagger-1">
+                    <div class="feature-icon w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Automatic Monitoring</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Silently captures every copy to your clipboard. Works seamlessly in the background without interrupting your workflow.
+                    </p>
+                </div>
 
-          <div class="feature-card fade-in">
-            <span class="feature-icon">🔒</span>
-            <h3 class="feature-title">AES-256-GCM Encryption</h3>
-            <p class="feature-description">
-              All content encrypted at rest with keys in macOS Keychain. Smart filtering auto-detects and excludes passwords, API keys, SSH keys, and credit cards.
-            </p>
-          </div>
+                <!-- Feature 2: AES-256-GCM Encryption -->
+                <div class="glass-card rounded-3xl p-8 transition-all duration-300 opacity-0-initial stagger-2">
+                    <div class="feature-icon w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">AES-256-GCM Encryption</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Military-grade encryption protects all stored clipboard data at rest. Your sensitive information stays secure on your device.
+                    </p>
+                </div>
 
-          <div class="feature-card fade-in">
-            <span class="feature-icon">⚡</span>
-            <h3 class="feature-title">Real-Time Search</h3>
-            <p class="feature-description">
-              Instantly filter clipboard history. Pin important items to keep frequently used snippets at the top.
-            </p>
-          </div>
+                <!-- Feature 3: Smart Filtering -->
+                <div class="glass-card rounded-3xl p-8 transition-all duration-300 opacity-0-initial stagger-3">
+                    <div class="feature-icon w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Smart Content Filtering</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Automatically detects and excludes passwords, API keys, SSH keys, and credit card numbers. Privacy by design.
+                    </p>
+                </div>
 
-          <div class="feature-card fade-in">
-            <span class="feature-icon">🎨</span>
-            <h3 class="feature-title">Rich Text Support</h3>
-            <p class="feature-description">
-              Preserves bold, italic, colors, and formatting. RTF content maintained exactly as you copied it.
-            </p>
-          </div>
+                <!-- Feature 4: Rich Text Support -->
+                <div class="glass-card rounded-3xl p-8 transition-all duration-300 opacity-0-initial stagger-4">
+                    <div class="feature-icon w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Rich Text Support</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Preserves bold, italic, colors, and formatting. RTF maintained exactly as you copied it, every time.
+                    </p>
+                </div>
 
-          <div class="feature-card fade-in">
-            <span class="feature-icon">📱</span>
-            <h3 class="feature-title">Source App Tracking</h3>
-            <p class="feature-description">
-              See which app each clipboard item came from with native icons. Filter history by source application.
-            </p>
-          </div>
+                <!-- Feature 5: Source App Tracking -->
+                <div class="glass-card rounded-3xl p-8 transition-all duration-300 opacity-0-initial stagger-5">
+                    <div class="feature-icon w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Source App Tracking</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        See which app each clip came from with native icons. Quickly find content by remembering where you copied it.
+                    </p>
+                </div>
 
-          <div class="feature-card fade-in">
-            <span class="feature-icon">🚫</span>
-            <h3 class="feature-title">App Exclusions</h3>
-            <p class="feature-description">
-              Exclude password managers and banking apps. Customize which applications should never enter your clipboard history.
-            </p>
-          </div>
+                <!-- Feature 6: Pin Important Items -->
+                <div class="glass-card rounded-3xl p-8 transition-all duration-300 opacity-0-initial stagger-6">
+                    <div class="feature-icon w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Pin Important Items</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Keep frequently used snippets at your fingertips. Pin items to prevent them from being pushed out of history.
+                    </p>
+                </div>
+            </div>
         </div>
-      </div>
     </section>
 
-    <!-- How It Works -->
-    <section class="how-it-works">
-      <div class="container">
-        <h2 class="section-title">How It Works</h2>
-        <div class="steps">
-          <div class="step">
-            <div class="step-number">1</div>
-            <h3 class="step-title">Download & Install</h3>
-            <p class="step-description">
-              Download ClipVault and drag it to your Applications folder.
-              Launch it once to start.
+    <!-- Installation Section -->
+    <section class="py-24 px-6 bg-gradient-to-b from-transparent via-gray-50/50 to-transparent" id="installation">
+        <div class="max-w-3xl mx-auto text-center">
+            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
+                Install in seconds
+            </h2>
+            <p class="text-xl text-gray-600 mb-12">
+                Get started with a single command using Homebrew
             </p>
-          </div>
-          <div class="step">
-            <div class="step-number">2</div>
-            <h3 class="step-title">Copy Anything</h3>
-            <p class="step-description">
-              Copy text as usual. ClipVault automatically captures and
-              encrypts everything in the background.
-            </p>
-          </div>
-          <div class="step">
-            <div class="step-number">3</div>
-            <h3 class="step-title">Access Anytime</h3>
-            <p class="step-description">
-              Click the menu bar icon to search, browse, and paste from your
-              encrypted clipboard history.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- CTA Section -->
-    <section class="cta" id="download">
-      <div class="container">
-        <h2>Ready to Get Started?</h2>
-        <p>
-          Free, open source, and built for privacy.
-        </p>
-        <a
-          href="https://github.com/eddmann/ClipVault/releases"
-          class="cta-btn"
-          target="_blank"
-          >Download ClipVault</a
-        >
-        <p style="margin-top: 20px; font-size: 14px; opacity: 0.8">
-          Requires macOS 12.0 (Monterey) or later
-        </p>
-      </div>
+            <!-- Terminal -->
+            <div class="terminal rounded-2xl overflow-hidden text-left shadow-2xl opacity-0-initial">
+                <!-- Terminal header -->
+                <div class="flex items-center gap-3 px-5 py-4 bg-gradient-to-b from-white/[0.08] to-transparent border-b border-white/[0.05]">
+                    <div class="terminal-dots flex gap-2">
+                        <span class="bg-[#ff5f57]"></span>
+                        <span class="bg-[#febc2e]"></span>
+                        <span class="bg-[#28c840]"></span>
+                    </div>
+                    <span class="text-gray-500 text-sm font-medium ml-2">Terminal</span>
+                </div>
+
+                <!-- Terminal content -->
+                <div class="flex items-center py-4 pl-4 pr-2 md:pl-6 md:pr-4 font-mono">
+                    <div class="relative flex-1 overflow-hidden">
+                        <div class="overflow-x-auto scrollbar-hide">
+                            <div class="flex items-center gap-2 md:gap-3 whitespace-nowrap pr-6">
+                                <span class="text-green-400 font-medium">$</span>
+                                <code class="text-gray-100 text-sm md:text-lg select-all">brew install eddmann/tap/clipvault</code>
+                            </div>
+                        </div>
+                        <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#0d0d0d] to-transparent pointer-events-none md:hidden"></div>
+                    </div>
+                    <button class="js-copy-command ml-2 p-2 hover:bg-white/10 rounded-lg transition-colors group flex-shrink-0"
+                            data-command="brew install eddmann/tap/clipvault" title="Copy to clipboard" aria-label="Copy command to clipboard">
+                        <svg class="w-5 h-5 text-gray-500 group-hover:text-white transition-colors copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                        <svg class="w-5 h-5 text-green-400 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <p class="mt-8 text-gray-500 text-sm">
+                Or download directly from
+                <a href="https://github.com/eddmann/ClipVault/releases" class="text-blue-600 hover:text-blue-700 underline underline-offset-2 transition-colors">GitHub Releases</a>
+            </p>
+        </div>
     </section>
 
     <!-- Footer -->
-    <footer>
-      <div class="container">
-        <p>
-          &copy; 2025
-          <a href="https://eddmann.com" style="margin: 0; color: inherit"
-            >Edd Mann</a
-          >. Built with 🔒 for Mac.
-        </p>
-        <div style="margin-top: 20px">
-          <a href="https://github.com/eddmann/ClipVault" target="_blank"
-            >GitHub</a
-          >
+    <footer class="py-12 px-6 border-t border-gray-200/60">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-3">
+                <div class="gradient-bg w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                </div>
+                <span class="font-semibold text-gray-900 text-lg">ClipVault</span>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="https://github.com/eddmann/ClipVault" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors" target="_blank" rel="noopener">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-sm font-medium">GitHub</span>
+                </a>
+
+                <span class="text-gray-300">|</span>
+
+                <span class="text-gray-600 text-sm">
+                    Made by <a href="https://eddmann.com" class="text-blue-600 hover:text-blue-700 font-medium transition-colors" target="_blank" rel="noopener">Edd Mann</a>
+                </span>
+            </div>
         </div>
-      </div>
     </footer>
 
     <script>
-      // Intersection Observer for fade-in animations
-      const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px',
-      };
+        // Copy command buttons
+        document.querySelectorAll('.js-copy-command').forEach(button => {
+            button.addEventListener('click', () => {
+                const text = button.dataset.command;
+                navigator.clipboard.writeText(text);
 
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-          }
+                const copyIcon = button.querySelector('.copy-icon');
+                const checkIcon = button.querySelector('.check-icon');
+                copyIcon.classList.add('hidden');
+                checkIcon.classList.remove('hidden');
+
+                setTimeout(() => {
+                    copyIcon.classList.remove('hidden');
+                    checkIcon.classList.add('hidden');
+                }, 2000);
+            });
         });
-      }, observerOptions);
 
-      // Observe all fade-in elements
-      document.querySelectorAll('.fade-in').forEach(el => {
-        observer.observe(el);
-      });
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
 
-      // Add parallax effect to hero icon
-      let lastScroll = 0;
-      window.addEventListener('scroll', () => {
-        const currentScroll = window.pageYOffset;
-        const heroIcon = document.querySelector('.hero-icon');
-        if (heroIcon && currentScroll < 500) {
-          heroIcon.style.transform = `translateY(${currentScroll * 0.3}px)`;
-        }
-        lastScroll = currentScroll;
-      });
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.remove('opacity-0-initial');
+                    entry.target.classList.add('animate-fade-in-up');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.opacity-0-initial').forEach(el => {
+            observer.observe(el);
+        });
     </script>
-  </body>
+</body>
 </html>
