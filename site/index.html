@@ -60,6 +60,14 @@
     }
     </script>
 
+    <!-- Theme flash prevention -->
+    <script>
+        if (localStorage.getItem('theme-preference') === 'dark' ||
+            (!localStorage.getItem('theme-preference') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -70,6 +78,7 @@
 
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -91,6 +100,12 @@
     <style>
         body {
             background-color: #fafafa;
+            min-height: 100vh;
+        }
+
+        html.dark body {
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
         }
 
         .gradient-text {
@@ -133,6 +148,35 @@
                 0 10px 15px -3px rgba(0, 0, 0, 0.08),
                 0 20px 25px -5px rgba(0, 0, 0, 0.06),
                 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+        }
+
+        html.dark .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        html.dark .glass-card:hover {
+            background: rgba(30, 41, 59, 0.85);
+            box-shadow:
+                0 20px 40px rgba(59, 130, 246, 0.15),
+                0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        html.dark .security-badge {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(16, 185, 129, 0.12) 100%);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        html.dark .macos-badge {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        html.dark .security-pattern {
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(99, 102, 241, 0.06) 0%, transparent 50%);
         }
 
         .app-icon-wrapper {
@@ -253,7 +297,21 @@
         }
     </style>
 </head>
-<body class="font-sans text-gray-800 antialiased">
+<body class="font-sans text-gray-800 dark:text-gray-100 antialiased">
+
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" onclick="toggleTheme()"
+        class="fixed top-6 right-6 z-50 p-3 rounded-2xl bg-white/70 dark:bg-slate-800/70 backdrop-blur-lg border border-gray-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300"
+        aria-label="Toggle dark mode">
+        <!-- Sun icon (visible in dark mode) -->
+        <svg class="w-5 h-5 text-gray-600 dark:text-gray-300 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        <!-- Moon icon (visible in light mode) -->
+        <svg class="w-5 h-5 text-gray-600 dark:text-gray-300 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+        </svg>
+    </button>
 
     <!-- Hero Section -->
     <section class="min-h-screen flex flex-col items-center justify-center px-6 py-20 relative overflow-hidden security-pattern">
@@ -275,31 +333,31 @@
             <!-- Headline -->
             <h1 class="text-5xl md:text-7xl font-bold mb-6 animate-fade-in-up stagger-2 tracking-tight">
                 <span class="gradient-text">Secure Clipboard</span><br>
-                <span class="text-gray-900">Manager</span>
+                <span class="text-gray-900 dark:text-white">Manager</span>
             </h1>
 
             <!-- Tagline -->
-            <p class="text-xl md:text-2xl text-gray-600 mb-10 max-w-2xl mx-auto animate-fade-in-up stagger-3 leading-relaxed">
+            <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto animate-fade-in-up stagger-3 leading-relaxed">
                 Never lose clipboard history again.<br class="hidden md:block">
-                <span class="text-gray-800 font-medium">Encrypted, private, and powerful.</span>
+                <span class="text-gray-800 dark:text-gray-200 font-medium">Encrypted, private, and powerful.</span>
             </p>
 
             <!-- Badges -->
             <div class="flex flex-wrap items-center justify-center gap-3 mb-10 animate-fade-in-up stagger-4">
                 <!-- macOS Badge -->
                 <div class="macos-badge px-4 py-2 rounded-full flex items-center gap-2">
-                    <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+                    <svg class="w-4 h-4 text-gray-600 dark:text-gray-400" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
                     </svg>
-                    <span class="text-sm font-medium text-gray-700">macOS 12.0+</span>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">macOS 12.0+</span>
                 </div>
 
                 <!-- Security Badge -->
                 <div class="security-badge px-4 py-2 rounded-full flex items-center gap-2">
-                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                     </svg>
-                    <span class="text-sm font-semibold text-green-700">AES-256-GCM Encrypted</span>
+                    <span class="text-sm font-semibold text-green-700 dark:text-green-400">AES-256-GCM Encrypted</span>
                 </div>
             </div>
 
@@ -316,7 +374,7 @@
 
         <!-- Scroll indicator -->
         <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-pulse-slow">
-            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
             </svg>
         </div>
@@ -326,10 +384,10 @@
     <section class="py-24 px-6" id="features">
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
                     Privacy-first features
                 </h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                <p class="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                     Powerful clipboard management with security at its core
                 </p>
             </div>
@@ -343,8 +401,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Automatic Monitoring</h3>
-                    <p class="text-gray-600 leading-relaxed">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">Automatic Monitoring</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
                         Silently captures every copy to your clipboard. Works seamlessly in the background without interrupting your workflow.
                     </p>
                 </div>
@@ -356,8 +414,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">AES-256-GCM Encryption</h3>
-                    <p class="text-gray-600 leading-relaxed">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">AES-256-GCM Encryption</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
                         Military-grade encryption protects all stored clipboard data at rest. Your sensitive information stays secure on your device.
                     </p>
                 </div>
@@ -369,8 +427,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Smart Content Filtering</h3>
-                    <p class="text-gray-600 leading-relaxed">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">Smart Content Filtering</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
                         Automatically detects and excludes passwords, API keys, SSH keys, and credit card numbers. Privacy by design.
                     </p>
                 </div>
@@ -382,8 +440,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Rich Text Support</h3>
-                    <p class="text-gray-600 leading-relaxed">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">Rich Text Support</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
                         Preserves bold, italic, colors, and formatting. RTF maintained exactly as you copied it, every time.
                     </p>
                 </div>
@@ -395,8 +453,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Source App Tracking</h3>
-                    <p class="text-gray-600 leading-relaxed">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">Source App Tracking</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
                         See which app each clip came from with native icons. Quickly find content by remembering where you copied it.
                     </p>
                 </div>
@@ -408,8 +466,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Pin Important Items</h3>
-                    <p class="text-gray-600 leading-relaxed">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">Pin Important Items</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
                         Keep frequently used snippets at your fingertips. Pin items to prevent them from being pushed out of history.
                     </p>
                 </div>
@@ -418,12 +476,12 @@
     </section>
 
     <!-- Installation Section -->
-    <section class="py-24 px-6 bg-gradient-to-b from-transparent via-gray-50/50 to-transparent" id="installation">
+    <section class="py-24 px-6 bg-gradient-to-b from-transparent via-gray-50/50 dark:via-slate-800/30 to-transparent" id="installation">
         <div class="max-w-3xl mx-auto text-center">
-            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
+            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
                 Install in seconds
             </h2>
-            <p class="text-xl text-gray-600 mb-12">
+            <p class="text-xl text-gray-600 dark:text-gray-400 mb-12">
                 Get started with a single command using Homebrew
             </p>
 
@@ -462,15 +520,15 @@
                 </div>
             </div>
 
-            <p class="mt-8 text-gray-500 text-sm">
+            <p class="mt-8 text-gray-500 dark:text-gray-400 text-sm">
                 Or download directly from
-                <a href="https://github.com/eddmann/ClipVault/releases" class="text-blue-600 hover:text-blue-700 underline underline-offset-2 transition-colors">GitHub Releases</a>
+                <a href="https://github.com/eddmann/ClipVault/releases" class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2 transition-colors">GitHub Releases</a>
             </p>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="py-12 px-6 border-t border-gray-200/60">
+    <footer class="py-12 px-6 border-t border-gray-200/60 dark:border-slate-700/60">
         <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div class="flex items-center gap-3">
                 <div class="gradient-bg w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
@@ -478,21 +536,21 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
                 </div>
-                <span class="font-semibold text-gray-900 text-lg">ClipVault</span>
+                <span class="font-semibold text-gray-900 dark:text-white text-lg">ClipVault</span>
             </div>
 
             <div class="flex items-center gap-6">
-                <a href="https://github.com/eddmann/ClipVault" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors" target="_blank" rel="noopener">
+                <a href="https://github.com/eddmann/ClipVault" class="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors" target="_blank" rel="noopener">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
                     </svg>
                     <span class="text-sm font-medium">GitHub</span>
                 </a>
 
-                <span class="text-gray-300">|</span>
+                <span class="text-gray-300 dark:text-gray-600">|</span>
 
-                <span class="text-gray-600 text-sm">
-                    Made by <a href="https://eddmann.com" class="text-blue-600 hover:text-blue-700 font-medium transition-colors" target="_blank" rel="noopener">Edd Mann</a>
+                <span class="text-gray-600 dark:text-gray-400 text-sm">
+                    Made by <a href="https://eddmann.com" class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors" target="_blank" rel="noopener">Edd Mann</a>
                 </span>
             </div>
         </div>
@@ -535,6 +593,38 @@
         document.querySelectorAll('.opacity-0-initial').forEach(el => {
             observer.observe(el);
         });
+    </script>
+
+    <!-- Theme Toggle -->
+    <script>
+    (function() {
+        const STORAGE_KEY = 'theme-preference';
+
+        function getThemePreference() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) return stored;
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        function setTheme(theme) {
+            document.documentElement.classList.toggle('dark', theme === 'dark');
+        }
+
+        setTheme(getThemePreference());
+
+        window.toggleTheme = function() {
+            const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem(STORAGE_KEY, next);
+            setTheme(next);
+        };
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem(STORAGE_KEY)) {
+                setTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+    })();
     </script>
 </body>
 </html>
