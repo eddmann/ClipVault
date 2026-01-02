@@ -61,16 +61,42 @@ struct SettingsView: View {
 
     private var generalTab: some View {
         VStack(alignment: .leading, spacing: 16) {
-            historyLimitSection
-            captureRTFSection
-            autoPasteSection
-            launchAtLoginSection
-            clearHistorySection
+            clipboardHistorySection
+            behaviorSection
         }
         .padding(24)
     }
 
-    private var historyLimitSection: some View {
+    // MARK: Clipboard History Section
+
+    private var clipboardHistorySection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Clipboard History")
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundStyle(.secondary)
+                .padding(.bottom, 12)
+
+            historyLimitRow
+            Divider().padding(.vertical, 12)
+            captureRTFRow
+            Divider().padding(.vertical, 12)
+            clearHistoryRow
+        }
+        .padding()
+        .background(.quaternary.opacity(0.3))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .alert("Clear Clipboard History?", isPresented: $showingClearConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Clear", role: .destructive) {
+                clearHistory()
+            }
+        } message: {
+            Text("This will delete all non-pinned items. Pinned items will be kept.")
+        }
+    }
+
+    private var historyLimitRow: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text("History Limit")
@@ -93,12 +119,9 @@ struct SettingsView: View {
             .labelsHidden()
             .frame(width: 80)
         }
-        .padding()
-        .background(.quaternary.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
-    private var captureRTFSection: some View {
+    private var captureRTFRow: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Capture Rich Text")
@@ -113,40 +136,56 @@ struct SettingsView: View {
             Toggle("", isOn: $captureRTF)
                 .labelsHidden()
         }
-        .padding()
-        .background(.quaternary.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
-    private var autoPasteSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Toggle("Auto-paste on Select", isOn: $autoPasteOnSelect)
+    private var clearHistoryRow: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Clear History")
                     .font(.subheadline)
-                    .disabled(!hasAccessibilityPermission)
-
-                Spacer()
-
-                if !hasAccessibilityPermission {
-                    Button(action: {
-                        PasteHelper.shared.promptForAccessibilityPermissions()
-                    }) {
-                        Label("Grant Access", systemImage: "lock.shield")
-                    }
-                    .controlSize(.small)
-                }
+                Text("Permanently delete all non-pinned items")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
-            Text("Automatically paste when clicking an item")
-                .font(.caption)
+            Spacer()
+
+            Button(action: {
+                showingClearConfirmation = true
+            }) {
+                Label("Clear All", systemImage: "trash")
+            }
+            .controlSize(.small)
+            .tint(.red)
+        }
+    }
+
+    // MARK: Behavior Section
+
+    private var behaviorSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Behavior")
+                .font(.subheadline)
+                .fontWeight(.medium)
                 .foregroundStyle(.secondary)
+                .padding(.bottom, 12)
+
+            launchAtLoginRow
+            Divider().padding(.vertical, 12)
+            autoPasteRow
         }
         .padding()
         .background(.quaternary.opacity(0.3))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+        .onChange(of: launchAtLogin) { _, newValue in
+            if newValue != LaunchAtLoginManager.shared.isEnabled {
+                LaunchAtLoginManager.shared.toggle()
+                launchAtLogin = LaunchAtLoginManager.shared.isEnabled
+            }
+        }
     }
 
-    private var launchAtLoginSection: some View {
+    private var launchAtLoginRow: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Start at Login")
@@ -161,47 +200,33 @@ struct SettingsView: View {
             Toggle("", isOn: $launchAtLogin)
                 .labelsHidden()
         }
-        .padding()
-        .background(.quaternary.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .onChange(of: launchAtLogin) { _, newValue in
-            if newValue != LaunchAtLoginManager.shared.isEnabled {
-                LaunchAtLoginManager.shared.toggle()
-                launchAtLogin = LaunchAtLoginManager.shared.isEnabled
-            }
-        }
     }
 
-    private var clearHistorySection: some View {
+    private var autoPasteRow: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Button(action: {
-                showingClearConfirmation = true
-            }) {
-                HStack {
-                    Image(systemName: "trash")
-                    Text("Clear All History")
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Auto-paste on Select")
+                        .font(.subheadline)
+                    Text("Automatically paste when clicking an item")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.red)
-            .controlSize(.regular)
 
-            Text("Permanently delete all non-pinned items")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .padding()
-        .background(.quaternary.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .alert("Clear Clipboard History?", isPresented: $showingClearConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Clear", role: .destructive) {
-                clearHistory()
+                Spacer()
+
+                if !hasAccessibilityPermission {
+                    Button(action: {
+                        PasteHelper.shared.promptForAccessibilityPermissions()
+                    }) {
+                        Label("Grant Access", systemImage: "lock.shield")
+                    }
+                    .controlSize(.small)
+                } else {
+                    Toggle("", isOn: $autoPasteOnSelect)
+                        .labelsHidden()
+                }
             }
-        } message: {
-            Text("This will delete all non-pinned items. Pinned items will be kept.")
         }
     }
 
