@@ -9,10 +9,11 @@ import AppKit
 import SwiftUI
 import OSLog
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private var menu: NSMenu!
     private var searchField: NSSearchField!
+    private var searchFieldContainer: NSView!
     private var currentSearchQuery: String = ""
 
     private let clipboardMonitor = ClipboardMonitor.shared
@@ -100,9 +101,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Search field - create once
         let searchItem = NSMenuItem()
 
-        // Create container view for padding (wide enough for typical menu width)
-        let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 350, height: 40))
-        searchField = NSSearchField(frame: NSRect(x: 12, y: 6, width: 326, height: 28))
+        // Create container view (initial size, will be resized when menu opens)
+        searchFieldContainer = NSView(frame: NSRect(x: 0, y: 0, width: 300, height: 40))
+        searchField = NSSearchField(frame: NSRect(x: 12, y: 6, width: 276, height: 28))
         searchField.placeholderString = "Search…"
 
         // Modern rounded style
@@ -114,7 +115,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Allow search field to resize with container
         searchField.autoresizingMask = [.width]
 
-        containerView.addSubview(searchField)
+        searchFieldContainer.addSubview(searchField)
 
         // Use notification observer for real-time search
         NotificationCenter.default.addObserver(
@@ -124,8 +125,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             object: searchField
         )
 
-        searchItem.view = containerView
+        searchItem.view = searchFieldContainer
         menu.addItem(searchItem)
+        menu.delegate = self
 
         menu.addItem(NSMenuItem.separator())
 
@@ -231,6 +233,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menuItem.submenu = contextMenu
 
         return menuItem
+    }
+
+    // MARK: - NSMenuDelegate
+
+    func menuWillOpen(_ menu: NSMenu) {
+        // Resize search field to fill the menu width
+        let menuWidth = menu.size.width
+        if menuWidth > 0 {
+            searchFieldContainer.frame.size.width = menuWidth
+            searchField.frame.size.width = menuWidth - 24  // 12px padding on each side
+        }
     }
 
     // MARK: - Actions
