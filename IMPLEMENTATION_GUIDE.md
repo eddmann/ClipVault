@@ -1803,7 +1803,7 @@ if let existingItem = try? fetchItemByHash(hash) {
 **Targets:**
 
 1. **ClipVault** (macOS App)
-   - Deployment Target: macOS 12.0
+   - Deployment Target: macOS 14.0
    - Bundle ID: `com.clipvault.ClipVault` (adjust as needed)
    - Signing: Automatic or Manual
 

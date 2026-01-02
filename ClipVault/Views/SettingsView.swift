@@ -111,8 +111,10 @@ struct SettingsView: View {
             Picker("", selection: $maxHistoryItems) {
                 Text("50").tag(50)
                 Text("100").tag(100)
+                Text("150").tag(150)
                 Text("200").tag(200)
                 Text("300").tag(300)
+                Text("400").tag(400)
                 Text("500").tag(500)
             }
             .pickerStyle(.menu)

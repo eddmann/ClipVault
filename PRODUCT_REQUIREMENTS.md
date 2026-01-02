@@ -349,7 +349,7 @@ Full-screen browsable window for advanced clipboard history management with tabl
 - VoiceOver accessibility (future enhancement)
 
 ### Compatibility
-- **Minimum macOS Version**: macOS 12.0 (Monterey)
+- **Minimum macOS Version**: macOS 14.0 (Sonoma)
 - **Architecture**: Universal Binary (Intel + Apple Silicon)
 - **Xcode Version**: 15.0+
 - **Swift Version**: 5.9+
