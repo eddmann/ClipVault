@@ -26,25 +26,21 @@ struct HiddenWindowView: View {
             .onAppear {
                 // Find and hide the lifecycle window
                 DispatchQueue.main.async {
-                    for window in NSApp.windows {
-                        // Match by title or by being a tiny window
-                        if window.title == "ClipVaultLifecycle" ||
-                           (window.frame.width <= 20 && window.frame.height <= 20) {
-                            // Make the keepalive window truly invisible and non-interactive
-                            window.styleMask = [.borderless]
-                            window.collectionBehavior = [.auxiliary, .ignoresCycle, .transient, .canJoinAllSpaces]
-                            window.isExcludedFromWindowsMenu = true
-                            window.level = .floating
-                            window.isOpaque = false
-                            window.alphaValue = 0
-                            window.backgroundColor = .clear
-                            window.hasShadow = false
-                            window.ignoresMouseEvents = true
-                            window.canHide = false
-                            window.setContentSize(NSSize(width: 1, height: 1))
-                            window.setFrameOrigin(NSPoint(x: -5000, y: -5000))
-                            break
-                        }
+                    for window in NSApp.windows where window.title == "ClipVaultLifecycle" {
+                        // Make the keepalive window truly invisible and non-interactive
+                        window.styleMask = [.borderless]
+                        window.collectionBehavior = [.auxiliary, .ignoresCycle, .transient, .canJoinAllSpaces]
+                        window.isExcludedFromWindowsMenu = true
+                        window.level = .floating
+                        window.isOpaque = false
+                        window.alphaValue = 0
+                        window.backgroundColor = .clear
+                        window.hasShadow = false
+                        window.ignoresMouseEvents = true
+                        window.canHide = false
+                        window.setContentSize(NSSize(width: 1, height: 1))
+                        window.setFrameOrigin(NSPoint(x: -5000, y: -5000))
+                        break
                     }
                 }
             }

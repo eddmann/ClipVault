@@ -64,7 +64,7 @@ Use Xcode's Run button (⌘R). The app appears only in the menu bar (no Dock ico
 1. **Singleton Pattern**: All manager classes use `shared` instances
 2. **Observer Pattern**: Clipboard monitoring via callbacks, NotificationCenter for search field
 3. **Repository Pattern**: ClipItemManager abstracts Core Data access
-4. **MVVM**: SwiftUI views (SettingsView, ClipboardHistoryView) use ViewModels
+4. **MVVM**: SwiftUI views (ClipboardHistoryView) use ViewModels; SettingsView uses native Settings scene with local state
 
 ### Key Architectural Decisions
 
@@ -124,7 +124,7 @@ Timer (300ms) → Check changeCount → Get frontmost app bundle ID
 
 ### Views (SwiftUI)
 
-- **SettingsView.swift**: Tabbed settings (General, Privacy, About) with SettingsViewModel
+- **SettingsView.swift**: Tabbed settings (General, Privacy, About) using native Settings scene
 - **ClipboardHistoryView.swift**: View All window with table, search, app filtering
 - **CopyNotificationView.swift**: Animated notification overlay (center screen, 1.5s auto-dismiss)
 

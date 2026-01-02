@@ -39,7 +39,7 @@ The app is **signed and notarized** by Apple.
 
 ## Requirements
 
-- macOS 12.0 (Monterey) or later
+- macOS 14.0 (Sonoma) or later
 - Universal Binary (Intel + Apple Silicon)
 
 ## Security
