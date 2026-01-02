@@ -6,462 +6,402 @@
 //
 
 import SwiftUI
-import Combine
 import UniformTypeIdentifiers
 import OSLog
 
 struct SettingsView: View {
-    @StateObject private var viewModel = SettingsViewModel()
+    @State private var maxHistoryItems: Int = SettingsManager.shared.maxHistoryItems
+    @State private var captureRTF: Bool = SettingsManager.shared.captureRTF
+    @State private var autoPasteOnSelect: Bool = SettingsManager.shared.autoPasteOnSelect
+    @State private var launchAtLogin: Bool = LaunchAtLoginManager.shared.isEnabled
+    @State private var contentFilterEnabled: Bool = SettingsManager.shared.contentFilterEnabled
+    @State private var excludedAppBundleIDs: [String] = SettingsManager.shared.excludedAppBundleIDs
 
-    var body: some View {
-        TabView {
-            GeneralSettingsView(viewModel: viewModel)
-                .tabItem {
-                    Label("General", systemImage: "gear")
-                }
-
-            PrivacySettingsView(viewModel: viewModel)
-                .tabItem {
-                    Label("Privacy", systemImage: "lock.shield")
-                }
-
-            AboutSettingsView()
-                .tabItem {
-                    Label("About", systemImage: "info.circle")
-                }
-        }
-        .padding(.top, 12)
-        .frame(width: 550, height: 560)
-    }
-}
-
-// MARK: - General Settings
-
-struct GeneralSettingsView: View {
-    @ObservedObject var viewModel: SettingsViewModel
+    @State private var hasAccessibilityPermission = false
+    @State private var permissionCheckTask: Task<Void, Never>?
     @State private var showingClearConfirmation = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                // Clipboard Capture Section
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Clipboard Capture")
-                        .font(.headline)
-                        .foregroundColor(.primary)
+        contentView
+            .onAppear {
+                loadSettings()
+                checkPermissionStatus()
+                startPermissionCheckTimer()
+            }
+            .onDisappear {
+                permissionCheckTask?.cancel()
+                permissionCheckTask = nil
+            }
+    }
 
-                    VStack(alignment: .leading, spacing: 16) {
-                        // Max History Items
-                        HStack {
-                            Text("Maximum History Items")
-                                .font(.subheadline)
+    private var contentView: some View {
+        mainTabView
+            .modifier(SettingsSyncModifier(
+                maxHistoryItems: $maxHistoryItems,
+                captureRTF: $captureRTF,
+                autoPasteOnSelect: $autoPasteOnSelect,
+                contentFilterEnabled: $contentFilterEnabled,
+                excludedAppBundleIDs: $excludedAppBundleIDs
+            ))
+    }
 
-                            Spacer()
+    private var mainTabView: some View {
+        TabView {
+            generalTab
+                .tabItem { Label("General", systemImage: "gear") }
+            privacyTab
+                .tabItem { Label("Privacy", systemImage: "lock.shield") }
+            aboutTab
+                .tabItem { Label("About", systemImage: "info.circle") }
+        }
+        .frame(width: 500)
+    }
 
-                            Picker("", selection: $viewModel.maxHistoryItems) {
-                                Text("50").tag(50)
-                                Text("100").tag(100)
-                                Text("150").tag(150)
-                                Text("200").tag(200)
-                                Text("300").tag(300)
-                                Text("400").tag(400)
-                                Text("500").tag(500)
-                            }
-                            .pickerStyle(.menu)
-                            .labelsHidden()
-                            .frame(width: 100)
-                        }
+    // MARK: - General Tab
 
-                        Divider()
+    private var generalTab: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            historyLimitSection
+            captureRTFSection
+            autoPasteSection
+            launchAtLoginSection
+            clearHistorySection
+        }
+        .padding(24)
+    }
 
-                        // Capture RTF
-                        HStack(alignment: .top, spacing: 12) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Capture Rich Text Formatting")
-                                    .font(.subheadline)
-                                Text("Preserve bold, italic, colors, and other formatting")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
+    private var historyLimitSection: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("History Limit")
+                    .font(.subheadline)
+                Text("Maximum number of items to keep")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
 
-                            Spacer()
+            Spacer()
 
-                            Toggle("", isOn: $viewModel.captureRTF)
-                                .labelsHidden()
-                                .toggleStyle(.switch)
-                        }
+            Picker("", selection: $maxHistoryItems) {
+                Text("50").tag(50)
+                Text("100").tag(100)
+                Text("200").tag(200)
+                Text("300").tag(300)
+                Text("500").tag(500)
+            }
+            .pickerStyle(.menu)
+            .labelsHidden()
+            .frame(width: 80)
+        }
+        .padding()
+        .background(.quaternary.opacity(0.3))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private var captureRTFSection: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Capture Rich Text")
+                    .font(.subheadline)
+                Text("Preserve bold, italic, colors, and other formatting")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Toggle("", isOn: $captureRTF)
+                .labelsHidden()
+        }
+        .padding()
+        .background(.quaternary.opacity(0.3))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private var autoPasteSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Toggle("Auto-paste on Select", isOn: $autoPasteOnSelect)
+                    .font(.subheadline)
+                    .disabled(!hasAccessibilityPermission)
+
+                Spacer()
+
+                if !hasAccessibilityPermission {
+                    Button(action: {
+                        PasteHelper.shared.promptForAccessibilityPermissions()
+                    }) {
+                        Label("Grant Access", systemImage: "lock.shield")
                     }
-                    .padding()
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .cornerRadius(8)
-                }
-
-                // Behavior Section
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Behavior")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-
-                    VStack(alignment: .leading, spacing: 16) {
-                        HStack(alignment: .top, spacing: 12) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Auto-paste on Select")
-                                    .font(.subheadline)
-                                Text("Automatically paste when clicking an item (requires Accessibility permission)")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-
-                            Spacer()
-
-                            Toggle("", isOn: $viewModel.autoPasteOnSelect)
-                                .labelsHidden()
-                                .toggleStyle(.switch)
-                        }
-
-                        Divider()
-
-                        HStack(alignment: .top, spacing: 12) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Launch at Login")
-                                    .font(.subheadline)
-                                Text("Automatically start ClipVault when you log in")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-
-                            Spacer()
-
-                            Toggle("", isOn: $viewModel.launchAtLogin)
-                                .labelsHidden()
-                                .toggleStyle(.switch)
-                        }
-                    }
-                    .padding()
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .cornerRadius(8)
-                }
-
-                // History Management Section
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("History Management")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        Button(action: {
-                            showingClearConfirmation = true
-                        }) {
-                            HStack {
-                                Image(systemName: "trash")
-                                Text("Clear All History")
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.red)
-                        .controlSize(.large)
-
-                        Text("This will permanently delete all non-pinned items from your clipboard history.")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .padding()
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .cornerRadius(8)
+                    .controlSize(.small)
                 }
             }
-            .padding(20)
+
+            Text("Automatically paste when clicking an item")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
+        .padding()
+        .background(.quaternary.opacity(0.3))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private var launchAtLoginSection: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Start at Login")
+                    .font(.subheadline)
+                Text("Automatically launch ClipVault when you log in")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Toggle("", isOn: $launchAtLogin)
+                .labelsHidden()
+        }
+        .padding()
+        .background(.quaternary.opacity(0.3))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .onChange(of: launchAtLogin) { _, newValue in
+            if newValue != LaunchAtLoginManager.shared.isEnabled {
+                LaunchAtLoginManager.shared.toggle()
+                launchAtLogin = LaunchAtLoginManager.shared.isEnabled
+            }
+        }
+    }
+
+    private var clearHistorySection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Button(action: {
+                showingClearConfirmation = true
+            }) {
+                HStack {
+                    Image(systemName: "trash")
+                    Text("Clear All History")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.red)
+            .controlSize(.regular)
+
+            Text("Permanently delete all non-pinned items")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding()
+        .background(.quaternary.opacity(0.3))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
         .alert("Clear Clipboard History?", isPresented: $showingClearConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Clear", role: .destructive) {
-                viewModel.clearHistory()
+                clearHistory()
             }
         } message: {
-            Text("This will delete all non-pinned items from your clipboard history. Pinned items will be kept.")
+            Text("This will delete all non-pinned items. Pinned items will be kept.")
         }
     }
-}
 
-// MARK: - Privacy Settings
+    // MARK: - Privacy Tab
 
-struct PrivacySettingsView: View {
-    @ObservedObject var viewModel: SettingsViewModel
+    private var privacyTab: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            contentFilterSection
+            excludedAppsSection
+            encryptionInfoSection
+        }
+        .padding(24)
+    }
 
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                // Content Filtering Section
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Content Filtering")
-                        .font(.headline)
-                        .foregroundColor(.primary)
+    private var contentFilterSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Toggle("Filter Sensitive Content", isOn: $contentFilterEnabled)
+                    .font(.subheadline)
+            }
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack(alignment: .top, spacing: 12) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Filter Sensitive Content")
-                                    .font(.subheadline)
-                                Text("Automatically skip capturing content that looks like passwords, API keys, credit card numbers, or authentication tokens")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
+            Text("Skip capturing passwords, API keys, credit cards, and tokens")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(.quaternary.opacity(0.3))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
 
-                            Spacer()
+    private var excludedAppsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Excluded Applications")
+                .font(.subheadline)
 
-                            Toggle("", isOn: $viewModel.contentFilterEnabled)
-                                .labelsHidden()
-                                .toggleStyle(.switch)
-                        }
-                    }
-                    .padding()
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .cornerRadius(8)
-                }
+            Text("Don't capture clipboard content from these apps")
+                .font(.caption)
+                .foregroundStyle(.secondary)
 
-                // Excluded Apps Section
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Excluded Applications")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Don't capture clipboard content from these applications")
+            if excludedAppBundleIDs.isEmpty {
+                HStack {
+                    Spacer()
+                    VStack(spacing: 8) {
+                        Image(systemName: "app.dashed")
+                            .font(.system(size: 24))
+                            .foregroundStyle(.secondary.opacity(0.5))
+                        Text("No excluded apps")
                             .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        if viewModel.excludedAppBundleIDs.isEmpty {
-                            HStack {
-                                Spacer()
-                                VStack(spacing: 8) {
-                                    Image(systemName: "app.dashed")
-                                        .font(.system(size: 32))
-                                        .foregroundColor(.secondary.opacity(0.5))
-                                    Text("No excluded apps")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                .padding(.vertical, 20)
-                                Spacer()
-                            }
-                        } else {
-                            VStack(spacing: 8) {
-                                ForEach(viewModel.excludedAppBundleIDs, id: \.self) { bundleID in
-                                    HStack(spacing: 12) {
-                                        // App icon
-                                        if let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) {
-                                            let icon = NSWorkspace.shared.icon(forFile: appURL.path)
-                                            Image(nsImage: icon)
-                                                .resizable()
-                                                .frame(width: 32, height: 32)
-                                        } else {
-                                            Image(systemName: "app")
-                                                .font(.system(size: 24))
-                                                .foregroundColor(.secondary)
-                                                .frame(width: 32, height: 32)
-                                        }
-
-                                        // App name
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(viewModel.getAppName(for: bundleID))
-                                                .font(.subheadline)
-                                            Text(bundleID)
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-
-                                        Spacer()
-
-                                        // Remove button
-                                        Button(action: {
-                                            viewModel.removeExcludedApp(bundleID)
-                                        }) {
-                                            Image(systemName: "xmark.circle.fill")
-                                                .foregroundColor(.secondary)
-                                                .font(.system(size: 20))
-                                        }
-                                        .buttonStyle(.plain)
-                                        .help("Remove from excluded apps")
-                                    }
-                                    .padding(.vertical, 8)
-                                    .padding(.horizontal, 12)
-                                    .background(Color(nsColor: .windowBackgroundColor))
-                                    .cornerRadius(6)
-                                }
-                            }
-                        }
-
-                        Button(action: {
-                            viewModel.browseForApp()
-                        }) {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                Text("Browse for Application...")
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.large)
+                            .foregroundStyle(.secondary)
                     }
-                    .padding()
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .cornerRadius(8)
-                }
-
-                // Encryption Info Section
-                HStack(spacing: 8) {
-                    Image(systemName: "lock.shield.fill")
-                        .foregroundColor(.green)
-                    Text("All clipboard content is encrypted at rest using AES-256-GCM")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    .padding(.vertical, 12)
                     Spacer()
                 }
-                .padding()
-                .background(Color.green.opacity(0.1))
-                .cornerRadius(8)
-                .frame(maxWidth: .infinity)
-            }
-            .padding(20)
-        }
-    }
-}
-
-// MARK: - About Settings
-
-struct AboutSettingsView: View {
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                Spacer()
-                    .frame(height: 40)
-
-                // App Icon
-                if let appIconImage = NSImage(named: "AppIcon") {
-                    Image(nsImage: appIconImage)
-                        .resizable()
-                        .frame(width: 128, height: 128)
-                        .cornerRadius(22)
-                        .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
-                } else {
-                    Image(systemName: "doc.on.clipboard.fill")
-                        .font(.system(size: 80))
-                        .foregroundColor(.accentColor)
+            } else {
+                VStack(spacing: 6) {
+                    ForEach(excludedAppBundleIDs, id: \.self) { bundleID in
+                        excludedAppRow(bundleID: bundleID)
+                    }
                 }
+            }
 
-                Spacer()
-                    .frame(height: 24)
+            Button(action: { browseForApp() }) {
+                HStack {
+                    Image(systemName: "plus.circle.fill")
+                    Text("Add Application")
+                }
+            }
+            .controlSize(.small)
+        }
+        .padding()
+        .background(.quaternary.opacity(0.3))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
 
-                // App Name
+    private func excludedAppRow(bundleID: String) -> some View {
+        HStack(spacing: 10) {
+            if let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) {
+                Image(nsImage: NSWorkspace.shared.icon(forFile: appURL.path))
+                    .resizable()
+                    .frame(width: 24, height: 24)
+            } else {
+                Image(systemName: "app")
+                    .font(.system(size: 18))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 24, height: 24)
+            }
+
+            Text(getAppName(for: bundleID))
+                .font(.subheadline)
+
+            Spacer()
+
+            Button(action: { removeExcludedApp(bundleID) }) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.borderless)
+            .help("Remove from excluded apps")
+        }
+        .padding(.vertical, 6)
+        .padding(.horizontal, 10)
+        .background(.background)
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+    }
+
+    private var encryptionInfoSection: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "checkmark.shield.fill")
+                .foregroundStyle(.green)
+            Text("All content encrypted at rest using AES-256-GCM")
+                .font(.caption)
+                .foregroundStyle(.green)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(Color.green.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    // MARK: - About Tab
+
+    private var aboutTab: some View {
+        VStack(spacing: 24) {
+            if let appIconImage = NSImage(named: "AppIcon") {
+                Image(nsImage: appIconImage)
+                    .resizable()
+                    .frame(width: 128, height: 128)
+                    .cornerRadius(22)
+                    .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
+            } else {
+                Image(systemName: "list.clipboard.fill")
+                    .font(.system(size: 80))
+                    .foregroundStyle(.blue)
+            }
+
+            VStack(spacing: 8) {
                 Text("ClipVault")
                     .font(.system(size: 28, weight: .semibold))
 
-                Spacer()
-                    .frame(height: 8)
-
-                // Version
                 if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
                    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
                     Text("Version \(version) (\(build))")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
-
-                Spacer()
-                    .frame(height: 32)
-
-                // Copyright
-                VStack(spacing: 8) {
-                    Text("© 2025 Edd Mann")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
-                    Text("Secure clipboard manager for macOS")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-                    .frame(height: 32)
-
-                // Project Link
-                VStack(spacing: 12) {
-                    Link(destination: URL(string: "https://github.com/eddmann/ClipVault")!) {
-                        HStack {
-                            Image(systemName: "link.circle.fill")
-                            Text("View Project on GitHub")
-                        }
-                        .frame(maxWidth: 280)
-                        .padding(.vertical, 10)
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
-                }
             }
-            .frame(maxWidth: .infinity)
+
+            VStack(spacing: 4) {
+                Text("© 2025 Edd Mann")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Text("Secure clipboard manager for macOS")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Link(destination: URL(string: "https://github.com/eddmann/ClipVault")!) {
+                HStack {
+                    Image(systemName: "link.circle.fill")
+                    Text("View Project on GitHub")
+                }
+                .frame(maxWidth: 280)
+                .padding(.vertical, 10)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
         }
-    }
-}
-
-// MARK: - View Model
-
-class SettingsViewModel: ObservableObject {
-    private let settings = SettingsManager.shared
-
-    @Published var maxHistoryItems: Int {
-        didSet { settings.maxHistoryItems = maxHistoryItems }
+        .padding(24)
+        .frame(maxWidth: .infinity)
     }
 
-    @Published var captureRTF: Bool {
-        didSet { settings.captureRTF = captureRTF }
+    // MARK: - Helper Methods
+
+    private func loadSettings() {
+        maxHistoryItems = SettingsManager.shared.maxHistoryItems
+        captureRTF = SettingsManager.shared.captureRTF
+        autoPasteOnSelect = SettingsManager.shared.autoPasteOnSelect
+        launchAtLogin = LaunchAtLoginManager.shared.isEnabled
+        contentFilterEnabled = SettingsManager.shared.contentFilterEnabled
+        excludedAppBundleIDs = SettingsManager.shared.excludedAppBundleIDs
+        checkPermissionStatus()
     }
 
-    @Published var autoPasteOnSelect: Bool {
-        didSet { settings.autoPasteOnSelect = autoPasteOnSelect }
+    private func checkPermissionStatus() {
+        hasAccessibilityPermission = PasteHelper.shared.checkAccessibilityPermissions()
     }
 
-    @Published var launchAtLogin: Bool {
-        didSet {
-            if launchAtLogin != LaunchAtLoginManager.shared.isEnabled {
-                LaunchAtLoginManager.shared.toggle()
+    private func startPermissionCheckTimer() {
+        permissionCheckTask = Task { @MainActor in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(2))
+                guard !Task.isCancelled else { break }
+                checkPermissionStatus()
             }
         }
     }
 
-    @Published var contentFilterEnabled: Bool {
-        didSet { settings.contentFilterEnabled = contentFilterEnabled }
-    }
-
-    @Published var excludedAppBundleIDs: [String] {
-        didSet { settings.excludedAppBundleIDs = excludedAppBundleIDs }
-    }
-
-    init() {
-        self.maxHistoryItems = settings.maxHistoryItems
-        self.captureRTF = settings.captureRTF
-        self.autoPasteOnSelect = settings.autoPasteOnSelect
-        self.launchAtLogin = LaunchAtLoginManager.shared.isEnabled
-        self.contentFilterEnabled = settings.contentFilterEnabled
-        self.excludedAppBundleIDs = settings.excludedAppBundleIDs
-    }
-
-    func addExcludedApp(_ bundleID: String) {
-        settings.addExcludedApp(bundleID: bundleID)
-        excludedAppBundleIDs = settings.excludedAppBundleIDs
-    }
-
-    func removeExcludedApp(_ bundleID: String) {
-        settings.removeExcludedApp(bundleID: bundleID)
-        excludedAppBundleIDs = settings.excludedAppBundleIDs
-    }
-
-    func clearHistory() {
+    private func clearHistory() {
         do {
             try ClipItemManager.shared.clearHistory()
             AppLogger.ui.info("Cleared clipboard history from settings")
@@ -470,39 +410,69 @@ class SettingsViewModel: ObservableObject {
         }
     }
 
-    func browseForApp() {
+    private func browseForApp() {
         let panel = NSOpenPanel()
-        panel.message = "Select an application to exclude from clipboard monitoring"
+        panel.message = "Select an application to exclude"
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         panel.allowedContentTypes = [.application]
         panel.directoryURL = URL(fileURLWithPath: "/Applications")
 
-        panel.begin { [weak self] response in
+        panel.begin { response in
             guard response == .OK, let url = panel.url else { return }
-
-            // Extract bundle identifier from the selected app
             if let bundle = Bundle(url: url),
                let bundleID = bundle.bundleIdentifier {
-                self?.addExcludedApp(bundleID)
+                SettingsManager.shared.addExcludedApp(bundleID: bundleID)
+                excludedAppBundleIDs = SettingsManager.shared.excludedAppBundleIDs
             }
         }
     }
 
-    func getAppName(for bundleID: String) -> String {
+    private func removeExcludedApp(_ bundleID: String) {
+        SettingsManager.shared.removeExcludedApp(bundleID: bundleID)
+        excludedAppBundleIDs = SettingsManager.shared.excludedAppBundleIDs
+    }
+
+    private func getAppName(for bundleID: String) -> String {
         guard let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else {
             return bundleID
         }
-
-        // Try to get the localized app name from the bundle
         if let bundle = Bundle(url: appURL),
-           let appName = bundle.localizedInfoDictionary?["CFBundleName"] as? String ?? bundle.infoDictionary?["CFBundleName"] as? String {
+           let appName = bundle.localizedInfoDictionary?["CFBundleName"] as? String ??
+                         bundle.infoDictionary?["CFBundleName"] as? String {
             return appName
         }
-
-        // Fallback to the app's file name without extension
         return appURL.deletingPathExtension().lastPathComponent
+    }
+}
+
+// MARK: - Settings Sync ViewModifier
+
+struct SettingsSyncModifier: ViewModifier {
+    @Binding var maxHistoryItems: Int
+    @Binding var captureRTF: Bool
+    @Binding var autoPasteOnSelect: Bool
+    @Binding var contentFilterEnabled: Bool
+    @Binding var excludedAppBundleIDs: [String]
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: maxHistoryItems) { _, new in
+                SettingsManager.shared.maxHistoryItems = new
+            }
+            .onChange(of: captureRTF) { _, new in
+                SettingsManager.shared.captureRTF = new
+            }
+            .onChange(of: autoPasteOnSelect) { _, new in
+                SettingsManager.shared.autoPasteOnSelect = new
+            }
+            .onChange(of: contentFilterEnabled) { _, new in
+                SettingsManager.shared.contentFilterEnabled = new
+            }
+            .onChange(of: excludedAppBundleIDs) { _, new in
+                SettingsManager.shared.excludedAppBundleIDs = new
+            }
     }
 }
 

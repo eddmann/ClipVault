@@ -20,7 +20,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private let settings = SettingsManager.shared
     private let pasteHelper = PasteHelper.shared
 
-    private var settingsWindow: NSWindow?
     private var viewAllWindow: NSWindow?
     private var previousFrontmostApp: NSRunningApplication?
 
@@ -342,27 +341,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func openSettings() {
-        // If settings window already exists, bring it to front
-        if let window = settingsWindow, window.isVisible {
-            window.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-            return
-        }
-
-        // Create settings window
-        let settingsView = SettingsView()
-        let hostingController = NSHostingController(rootView: settingsView)
-
-        let window = NSWindow(contentViewController: hostingController)
-        window.title = "ClipVault Settings"
-        window.styleMask = [.titled, .closable]
-        window.setContentSize(NSSize(width: 550, height: 500))
-        window.center()
-        window.makeKeyAndOrderFront(nil)
-
-        settingsWindow = window
-
         NSApp.activate(ignoringOtherApps: true)
+        NotificationCenter.default.post(name: .openClipVaultSettings, object: nil)
     }
 
     @objc private func openViewAll() {

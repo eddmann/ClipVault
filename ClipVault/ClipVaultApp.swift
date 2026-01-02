@@ -12,8 +12,15 @@ struct ClipVaultApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
+        // Hidden window keeps SwiftUI lifecycle alive for Settings scene
+        WindowGroup("ClipVaultLifecycle") {
+            HiddenWindowView()
+        }
+        .defaultSize(width: 1, height: 1)
+
+        // Native macOS Settings scene
         Settings {
-            EmptyView()
+            SettingsView()
         }
     }
 }
