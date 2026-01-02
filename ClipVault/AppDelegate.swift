@@ -100,18 +100,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Search field - create once
         let searchItem = NSMenuItem()
 
-        // Create container view for padding
-        let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 280, height: 36))
-        searchField = NSSearchField(frame: NSRect(x: 12, y: 6, width: 256, height: 24))
-        searchField.placeholderString = "Search clipboard..."
+        // Create container view for padding (wide enough for typical menu width)
+        let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 350, height: 40))
+        searchField = NSSearchField(frame: NSRect(x: 12, y: 6, width: 326, height: 28))
+        searchField.placeholderString = "Search…"
 
-        // Configure visual properties for better visibility
+        // Modern rounded style
         searchField.focusRingType = .default
-        searchField.isBordered = true
-        searchField.bezelStyle = .squareBezel
-        searchField.drawsBackground = true
-        
+        searchField.bezelStyle = .roundedBezel
+        searchField.controlSize = .large
         searchField.refusesFirstResponder = true
+
+        // Allow search field to resize with container
+        searchField.autoresizingMask = [.width]
 
         containerView.addSubview(searchField)
 
@@ -201,7 +202,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func createClipItemMenuItem(_ item: ClipItem) -> NSMenuItem {
-        let preview = item.getPreviewText()
+        let preview = item.getPreviewText(maxLength: 40)
         let timeAgo = item.getRelativeTimeString()
 
         let menuItem = NSMenuItem(title: "\(preview) (\(timeAgo))", action: #selector(clipItemSelected(_:)), keyEquivalent: "")
