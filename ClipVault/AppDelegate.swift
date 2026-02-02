@@ -24,16 +24,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var viewAllWindow: NSWindow?
     private var previousFrontmostApp: NSRunningApplication?
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        // Create status bar item
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+    #if DEBUG
+    private var demoMode: DemoMode?
+    #endif
 
-        if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "list.clipboard.fill", accessibilityDescription: "ClipVault")
-            button.image?.isTemplate = true
-            button.action = #selector(statusBarButtonClicked)
-            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        #if DEBUG
+        demoMode = DemoMode.fromArguments()
+        if let demoMode {
+            configureDemoMode(demoMode)
+            return
         }
+        #endif
+
+        startNormalOperation()
+    }
+
+    private func startNormalOperation() {
+        setupStatusBar()
 
         // Set up clipboard monitor
         clipboardMonitor.onNewClipDetected = { item in
@@ -44,6 +52,44 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         AppLogger.lifecycle.info("Application started successfully")
     }
+
+    private func setupStatusBar() {
+        // Create status bar item
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+
+        if let button = statusItem.button {
+            button.image = NSImage(systemSymbolName: "list.clipboard.fill", accessibilityDescription: "ClipVault")
+            button.image?.isTemplate = true
+            button.action = #selector(statusBarButtonClicked)
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+        }
+    }
+
+    // MARK: - Demo Mode
+
+    #if DEBUG
+    private func configureDemoMode(_ mode: DemoMode) {
+        // Configure in-memory store before any Core Data access
+        itemManager.configureForDemoMode()
+
+        // Populate demo data
+        let context = itemManager.getDemoContext()
+        DemoDataFactory.populateData(context: context, for: mode)
+
+        // Setup status bar (no clipboard monitoring in demo mode)
+        setupStatusBar()
+
+        AppLogger.lifecycle.info("Application started in demo mode: \(mode.rawValue, privacy: .public)")
+
+        // Show appropriate window based on mode
+        if mode.showsHistoryWindow {
+            // Delay to let app finish launching
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.openViewAll()
+            }
+        }
+    }
+    #endif
 
     func applicationWillTerminate(_ notification: Notification) {
         clipboardMonitor.stopMonitoring()

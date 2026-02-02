@@ -14,8 +14,21 @@ class ClipItemManager {
     static let shared = ClipItemManager()
 
     private let containerName = "ClipVault"
+
+    #if DEBUG
+    private var useInMemoryStore = false
+    #endif
+
     private lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: containerName)
+
+        #if DEBUG
+        if useInMemoryStore {
+            let description = NSPersistentStoreDescription()
+            description.type = NSInMemoryStoreType
+            container.persistentStoreDescriptions = [description]
+        }
+        #endif
 
         container.loadPersistentStores { description, error in
             if let error = error {
@@ -23,7 +36,7 @@ class ClipItemManager {
                 AppLogger.persistence.error("Store URL: \(description.url?.path ?? "unknown", privacy: .public)")
                 fatalError("Unable to load persistent stores: \(error)")
             }
-            AppLogger.persistence.info("Loaded Core Data store at: \(description.url?.path ?? "unknown", privacy: .public)")
+            AppLogger.persistence.info("Loaded Core Data store at: \(description.url?.path ?? "in-memory", privacy: .public)")
         }
 
         container.viewContext.automaticallyMergesChangesFromParent = true
@@ -40,6 +53,21 @@ class ClipItemManager {
     private let encryption = EncryptionManager.shared
 
     private init() {}
+
+    // MARK: - Demo Mode
+
+    #if DEBUG
+    /// Configures the manager to use an in-memory store for demo mode.
+    /// Must be called before any Core Data operations.
+    func configureForDemoMode() {
+        useInMemoryStore = true
+    }
+
+    /// Returns the managed object context for demo data population.
+    func getDemoContext() -> NSManagedObjectContext {
+        return context
+    }
+    #endif
 
     // MARK: - Public Methods
 

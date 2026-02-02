@@ -31,6 +31,24 @@ brew install eddmann/tap/clipvault
 
 The app is **signed and notarized** by Apple.
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/menu-with-history.png" width="400" alt="Menu with clipboard history" />
+</p>
+
+<p align="center">
+  <em>Quick access from the menu bar with pinned items and recent history</em>
+</p>
+
+<p align="center">
+  <img src="docs/history-window.png" width="700" alt="Clipboard history window" />
+</p>
+
+<p align="center">
+  <em>Full clipboard history window with search, app filtering, and actions</em>
+</p>
+
 ## Usage
 
 - Click the menu bar icon to view recent clipboard history and pinned items
